@@ -567,7 +567,7 @@ export default function Home() {
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "space-between",
-                            opacity: collected ? 1 : 0.65,
+                            opacity: 1,
                           }}
                         >
                           {collected && (
@@ -590,7 +590,7 @@ export default function Home() {
                           <div style={{
                             fontSize: "13px",
                             fontWeight: 600,
-                            color: collected ? T.textPrimary : T.textSecondary,
+                            color: T.textPrimary,
                             lineHeight: "1.35",
                             paddingRight: collected ? "28px" : "0",
                           }}>
@@ -603,7 +603,7 @@ export default function Home() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              style={{ fontSize: "15px", opacity: 0.45, textDecoration: "none", lineHeight: 1 }}
+                              style={{ fontSize: "15px", opacity: 0.7, textDecoration: "none", lineHeight: 1 }}
                               title={`Watch ${sub.name} tutorial`}
                             >
                               🎥

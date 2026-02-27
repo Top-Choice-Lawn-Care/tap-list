@@ -226,7 +226,7 @@ const FLOW_POSITIONS: FlowPosition[] = [
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("taplist");
+  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("gameplan");
 
   // Tap List state
   const [tapData, setTapData] = useState<TapData>({});
@@ -301,8 +301,8 @@ export default function Home() {
     }
     const text =
       totalCollected === 0
-        ? "I'm just getting started on Jiu Jitsu Tap List. 🥋"
-        : `I've tapped ${totalCollected} unique submissions on Jiu Jitsu Tap List. My most caught: ${topMove}. 🥋`;
+        ? "I'm just getting started on JJ Game Plan. 🥋"
+        : `I've tapped ${totalCollected} unique submissions on JJ Game Plan. My most caught: ${topMove}. 🥋`;
 
     setShareMsg(text);
     if (navigator.clipboard) {
@@ -349,13 +349,13 @@ export default function Home() {
             color: "#fff",
           }}
         >
-          🥋 Jiu Jitsu Tap List
+          🔗 JJ Game Plan
         </h1>
 
         {/* Tab bar */}
         <div style={{ display: "flex", gap: "4px" }}>
           <button
-            onClick={() => setActiveTab("taplist")}
+            onClick={() => setActiveTab("gameplan")}
             style={{
               padding: "8px 16px",
               fontSize: "14px",
@@ -364,13 +364,13 @@ export default function Home() {
               cursor: "pointer",
               border: "none",
               borderRadius: "6px 6px 0 0",
-              backgroundColor: activeTab === "taplist" ? "#1a1a1a" : "transparent",
-              color: activeTab === "taplist" ? "#fff" : "#6b7280",
-              borderBottom: activeTab === "taplist" ? "2px solid #dc2626" : "2px solid transparent",
+              backgroundColor: activeTab === "gameplan" ? "#1a1a1a" : "transparent",
+              color: activeTab === "gameplan" ? "#fff" : "#6b7280",
+              borderBottom: activeTab === "gameplan" ? "2px solid #7c3aed" : "2px solid transparent",
               transition: "all 0.15s ease",
             }}
           >
-            🥋 Tap List
+            🔗 Game Plan
           </button>
           <button
             onClick={() => { setActiveTab("flow"); setSelectedPosition(null); }}
@@ -391,7 +391,7 @@ export default function Home() {
             🗺️ Flow
           </button>
           <button
-            onClick={() => setActiveTab("gameplan")}
+            onClick={() => setActiveTab("taplist")}
             style={{
               padding: "8px 16px",
               fontSize: "14px",
@@ -400,13 +400,13 @@ export default function Home() {
               cursor: "pointer",
               border: "none",
               borderRadius: "6px 6px 0 0",
-              backgroundColor: activeTab === "gameplan" ? "#1a1a1a" : "transparent",
-              color: activeTab === "gameplan" ? "#fff" : "#6b7280",
-              borderBottom: activeTab === "gameplan" ? "2px solid #7c3aed" : "2px solid transparent",
+              backgroundColor: activeTab === "taplist" ? "#1a1a1a" : "transparent",
+              color: activeTab === "taplist" ? "#fff" : "#6b7280",
+              borderBottom: activeTab === "taplist" ? "2px solid #dc2626" : "2px solid transparent",
               transition: "all 0.15s ease",
             }}
           >
-            🔗 Game Plan
+            🥋 Tap List
           </button>
         </div>
       </div>

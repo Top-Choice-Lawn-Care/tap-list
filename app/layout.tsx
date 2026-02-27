@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Jiu Jitsu Tap List",
-  description: "Track your jiu-jitsu submissions",
+  title: "JJ Game Plan",
+  description: "BJJ game plan, decision tree, and submission tracker",
 };
 
 export default function RootLayout({

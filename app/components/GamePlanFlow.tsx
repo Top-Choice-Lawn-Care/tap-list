@@ -149,11 +149,48 @@ function SubmissionNode({ data }: { data: any }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function TakedownNode({ data }: { data: any }) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const query = encodeURIComponent(`bjj ${data.label} tutorial`);
+      window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+    },
+    [data.label]
+  );
+  return (
+    <div
+      onClick={handleClick}
+      style={{
+        background: '#2d1458',
+        border: '2px solid #9333ea',
+        borderRadius: '999px',
+        width: '150px',
+        height: '42px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '5px',
+        cursor: 'pointer',
+        userSelect: 'none',
+      }}
+    >
+      <Handle type="target" position={Position.Left} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
+      <span style={{ fontSize: '8px', lineHeight: 1 }}>🟣</span>
+      <span style={{ color: '#d8b4fe', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        {data.label}
+      </span>
+    </div>
+  );
+}
+
 const nodeTypes: NodeTypes = {
   startingPos: StartingPosNode,
   selected: SelectedNode,
   intermediate: IntermediateNode,
   submission: SubmissionNode,
+  takedown: TakedownNode,
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -161,6 +198,7 @@ const nodeTypes: NodeTypes = {
 const COL0 = 0;
 const COL1 = 300;
 const COL2 = 610;
+const COL3 = 920;
 
 function nd(id: string, type: string, x: number, y: number, data: Record<string, unknown>): Node {
   return {
@@ -367,33 +405,48 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
   },
 
   // ── STANDING ────────────────────────────────────────────────────────────────
-  // Root at y=170 (3 items at y=0,170,340)
+  // 4-column layout: COL0 root → COL1 level-1 → COL2 level-2 → COL3 level-3
+  // Level-1 y range 0..750, root centred at 307
   'standing': {
     nodes: [
-      nd('root',        'selected',     COL0, 170, { emoji: '🧍', label: 'Standing' }),
+      nd('root',         'selected',     COL0, 307, { emoji: '🧍', label: 'Standing' }),
       // Level 1
-      nd('st-cg',       'intermediate', COL1, 0,   { label: 'Closed Guard' }),
-      nd('st-sc',       'intermediate', COL1, 170, { label: 'Side Control (top)' }),
-      nd('st-guil',     'submission',   COL1, 340, { label: 'Guillotine' }),
+      nd('st-dl',        'takedown',     COL1, 0,   { label: 'Double Leg' }),
+      nd('st-sl',        'takedown',     COL1, 90,  { label: 'Single Leg' }),
+      nd('st-ad',        'intermediate', COL1, 210, { label: 'Arm Drag' }),
+      nd('st-guil',      'submission',   COL1, 330, { label: 'Guillotine' }),
+      nd('st-cg',        'intermediate', COL1, 460, { label: 'Closed Guard' }),
+      nd('st-sc',        'intermediate', COL1, 750, { label: 'Side Control (top)' }),
+      // Level 2 — from Arm Drag
+      nd('st-back',      'intermediate', COL2, 160, { label: 'Back Mount (top)' }),
       // Level 2 — from Closed Guard
-      nd('st-2-tri',    'submission',   COL2, 0,   { label: 'Triangle Choke' }),
-      nd('st-2-arm',    'submission',   COL2, 85,  { label: 'Armbar' }),
-      nd('st-2-kim',    'submission',   COL2, 170, { label: 'Kimura' }),
+      nd('st-2-tri',     'submission',   COL2, 410, { label: 'Triangle Choke' }),
+      nd('st-2-arm',     'submission',   COL2, 500, { label: 'Armbar' }),
+      nd('st-2-kim',     'submission',   COL2, 590, { label: 'Kimura' }),
       // Level 2 — from Side Control (top)
-      nd('st-2-mount',  'intermediate', COL2, 255, { label: 'Mount (top)' }),
-      nd('st-2-ame',    'submission',   COL2, 340, { label: 'Americana' }),
-      nd('st-2-darce',  'submission',   COL2, 425, { label: "D'Arce Choke" }),
+      nd('st-2-mount',   'intermediate', COL2, 700, { label: 'Mount (top)' }),
+      nd('st-2-ame',     'submission',   COL2, 790, { label: 'Americana' }),
+      nd('st-2-darce',   'submission',   COL2, 880, { label: "D'Arce Choke" }),
+      // Level 3 — from Back Mount (top)
+      nd('st-3-rnc',     'submission',   COL3, 115, { label: 'Rear Naked Choke' }),
+      nd('st-3-bow',     'submission',   COL3, 205, { label: 'Bow & Arrow' }),
     ],
     edges: [
-      ed('e1', 'root',  'st-cg',       false, 'guard pull'),
-      ed('e2', 'root',  'st-sc',       false, 'takedown'),
-      ed('e3', 'root',  'st-guil',     true,  'snap down'),
-      ed('e4', 'st-cg', 'st-2-tri',    true),
-      ed('e5', 'st-cg', 'st-2-arm',    true),
-      ed('e6', 'st-cg', 'st-2-kim',    true),
-      ed('e7', 'st-sc', 'st-2-mount',  false, 'advance'),
-      ed('e8', 'st-sc', 'st-2-ame',    true),
-      ed('e9', 'st-sc', 'st-2-darce',  true),
+      ed('e1',  'root',    'st-dl',      false, 'level change'),
+      ed('e2',  'root',    'st-sl',      false, 'level change'),
+      ed('e3',  'root',    'st-ad',      false, 'arm drag'),
+      ed('e4',  'root',    'st-guil',    true,  'snap down + underhook'),
+      ed('e5',  'root',    'st-cg',      false, 'guard pull'),
+      ed('e6',  'root',    'st-sc',      false, 'takedown lands'),
+      ed('e7',  'st-ad',   'st-back',    false, 'arm drag'),
+      ed('e8',  'st-back', 'st-3-rnc',   true),
+      ed('e9',  'st-back', 'st-3-bow',   true),
+      ed('e10', 'st-cg',   'st-2-tri',   true),
+      ed('e11', 'st-cg',   'st-2-arm',   true),
+      ed('e12', 'st-cg',   'st-2-kim',   true),
+      ed('e13', 'st-sc',   'st-2-mount', false, 'advance'),
+      ed('e14', 'st-sc',   'st-2-ame',   true),
+      ed('e15', 'st-sc',   'st-2-darce', true),
     ],
   },
 };

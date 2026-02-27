@@ -29,6 +29,17 @@ type PositionKey =
   | 'back-taken'
   | 'standing';
 
+// ─── Starting Positions Array (for default grid view) ────────────────────────
+
+const STARTING_POSITIONS: { id: PositionKey; emoji: string; label: string }[] = [
+  { id: 'closed-guard', emoji: '🥋', label: 'Closed Guard' },
+  { id: 'half-guard',   emoji: '½',  label: 'Half Guard'   },
+  { id: 'side-control', emoji: '😬', label: 'Side Control' },
+  { id: 'mount',        emoji: '😰', label: 'Mount'        },
+  { id: 'back-taken',   emoji: '😱', label: 'Back Taken'   },
+  { id: 'standing',     emoji: '🤼', label: 'Standing'     },
+];
+
 // ─── Custom Node Components ───────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -238,18 +249,6 @@ function ed(
   };
 }
 
-// ─── Default View: 6 Starting Position Nodes ─────────────────────────────────
-//  Layout: 3-col × 2-row grid, 200×70 cards, 60px gap
-
-const DEFAULT_NODES: Node[] = [
-  nd('closed-guard', 'startingPos', 0,   0,   { emoji: '🥋', label: 'Closed Guard' }),
-  nd('half-guard',   'startingPos', 260, 0,   { emoji: '½', label: 'Half Guard'   }),
-  nd('side-control', 'startingPos', 520, 0,   { emoji: '😬', label: 'Side Control' }),
-  nd('mount',        'startingPos', 0,   150, { emoji: '😰', label: 'Mount'        }),
-  nd('back-taken',   'startingPos', 260, 150, { emoji: '😱', label: 'Back Taken'   }),
-  nd('standing',     'startingPos', 520, 150, { emoji: '🤼', label: 'Standing'     }),
-];
-
 // ─── Subgraph Definitions ─────────────────────────────────────────────────────
 
 type Subgraph = { nodes: Node[]; edges: Edge[] };
@@ -257,22 +256,18 @@ type Subgraph = { nodes: Node[]; edges: Edge[] };
 const SUBGRAPHS: Record<PositionKey, Subgraph> = {
 
   // ── CLOSED GUARD ────────────────────────────────────────────────────────────
-  // Root centered at y=212 (midpoint of 6 level-1 items at y=0..425, spacing=85)
   'closed-guard': {
     nodes: [
       nd('root',        'selected',     COL0, 212, { emoji: '🥋', label: 'Closed Guard' }),
-      // Level 1
       nd('cg-tri',      'submission',   COL1, 0,   { label: 'Triangle Choke' }),
       nd('cg-arm',      'submission',   COL1, 85,  { label: 'Armbar' }),
       nd('cg-kim',      'submission',   COL1, 170, { label: 'Kimura' }),
       nd('cg-omo',      'submission',   COL1, 255, { label: 'Omoplata' }),
       nd('cg-mount',    'intermediate', COL1, 340, { label: 'Mount (top)' }),
       nd('cg-open',     'intermediate', COL1, 425, { label: 'Open Guard' }),
-      // Level 2 — from Mount (top)
       nd('cg-2-arm',    'submission',   COL2, 255, { label: 'Armbar' }),
       nd('cg-2-ame',    'submission',   COL2, 340, { label: 'Americana' }),
       nd('cg-2-back',   'intermediate', COL2, 425, { label: 'Back Mount (top)' }),
-      // Level 2 — from Open Guard (shares cg-2-back)
       nd('cg-2-tri',    'submission',   COL2, 510, { label: 'Triangle Choke' }),
     ],
     edges: [
@@ -291,18 +286,14 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
   },
 
   // ── HALF GUARD ──────────────────────────────────────────────────────────────
-  // Root at y=85 (3 items at y=0,85,170)
   'half-guard': {
     nodes: [
       nd('root',        'selected',     COL0, 85,  { emoji: '½', label: 'Half Guard' }),
-      // Level 1
       nd('hg-back',     'intermediate', COL1, 0,   { label: 'Back Mount (top)' }),
       nd('hg-kim',      'submission',   COL1, 85,  { label: 'Kimura' }),
       nd('hg-cg',       'intermediate', COL1, 170, { label: 'Closed Guard' }),
-      // Level 2 — from Back Mount (top)
       nd('hg-2-rnc',    'submission',   COL2, 0,   { label: 'Rear Naked Choke' }),
       nd('hg-2-bow',    'submission',   COL2, 85,  { label: 'Bow & Arrow' }),
-      // Level 2 — from Closed Guard
       nd('hg-2-tri',    'submission',   COL2, 170, { label: 'Triangle Choke' }),
       nd('hg-2-arm',    'submission',   COL2, 255, { label: 'Armbar' }),
       nd('hg-2-kim',    'submission',   COL2, 340, { label: 'Kimura' }),
@@ -319,23 +310,18 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
     ],
   },
 
-  // ── SIDE CONTROL (bottom, escaping) ─────────────────────────────────────────
-  // Root at y=170 (3 items at y=0,170,340)
+  // ── SIDE CONTROL ─────────────────────────────────────────────────────────────
   'side-control': {
     nodes: [
       nd('root',         'selected',     COL0, 170, { emoji: '😬', label: 'Side Control' }),
-      // Level 1
       nd('sc-cg',        'intermediate', COL1, 0,   { label: 'Closed Guard' }),
       nd('sc-hg',        'intermediate', COL1, 170, { label: 'Half Guard' }),
       nd('sc-turtle',    'intermediate', COL1, 340, { label: 'Turtle' }),
-      // Level 2 — from Closed Guard
       nd('sc-2-tri',     'submission',   COL2, 0,   { label: 'Triangle Choke' }),
       nd('sc-2-arm',     'submission',   COL2, 85,  { label: 'Armbar' }),
       nd('sc-2-kim',     'submission',   COL2, 170, { label: 'Kimura' }),
-      // Level 2 — from Half Guard
       nd('sc-2-back',    'intermediate', COL2, 255, { label: 'Back Mount (top)' }),
       nd('sc-2-kim2',    'submission',   COL2, 340, { label: 'Kimura' }),
-      // Level 2 — from Turtle
       nd('sc-2-back2',   'intermediate', COL2, 425, { label: 'Back Mount (top)' }),
       nd('sc-2-cg',      'intermediate', COL2, 510, { label: 'Closed Guard' }),
     ],
@@ -353,19 +339,15 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
     ],
   },
 
-  // ── MOUNT (bottom, escaping) ─────────────────────────────────────────────────
-  // Root at y=85 (2 items at y=0,170)
+  // ── MOUNT ─────────────────────────────────────────────────────────────────────
   'mount': {
     nodes: [
       nd('root',        'selected',     COL0, 85,  { emoji: '😰', label: 'Mount' }),
-      // Level 1
       nd('mt-cg',       'intermediate', COL1, 0,   { label: 'Closed Guard' }),
       nd('mt-hg',       'intermediate', COL1, 170, { label: 'Half Guard' }),
-      // Level 2 — from Closed Guard
       nd('mt-2-tri',    'submission',   COL2, 0,   { label: 'Triangle Choke' }),
       nd('mt-2-arm',    'submission',   COL2, 85,  { label: 'Armbar' }),
       nd('mt-2-kim',    'submission',   COL2, 170, { label: 'Kimura' }),
-      // Level 2 — from Half Guard
       nd('mt-2-back',   'intermediate', COL2, 255, { label: 'Back Mount (top)' }),
       nd('mt-2-kim2',   'submission',   COL2, 340, { label: 'Kimura' }),
     ],
@@ -380,18 +362,14 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
     ],
   },
 
-  // ── BACK TAKEN (bottom, escaping) ────────────────────────────────────────────
-  // Root at y=85 (2 items at y=0,170)
+  // ── BACK TAKEN ────────────────────────────────────────────────────────────────
   'back-taken': {
     nodes: [
       nd('root',        'selected',     COL0, 85,  { emoji: '😱', label: 'Back Taken' }),
-      // Level 1
       nd('bt-sc',       'intermediate', COL1, 0,   { label: 'Side Control (bottom)' }),
       nd('bt-turtle',   'intermediate', COL1, 170, { label: 'Turtle' }),
-      // Level 2 — from Side Control
       nd('bt-2-cg',     'intermediate', COL2, 0,   { label: 'Closed Guard' }),
       nd('bt-2-hg',     'intermediate', COL2, 85,  { label: 'Half Guard' }),
-      // Level 2 — from Turtle
       nd('bt-2-cg2',    'intermediate', COL2, 170, { label: 'Closed Guard' }),
       nd('bt-2-sc',     'intermediate', COL2, 255, { label: 'Side Control (bottom)' }),
     ],
@@ -406,29 +384,22 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
   },
 
   // ── STANDING ────────────────────────────────────────────────────────────────
-  // 4-column layout: COL0 root → COL1 level-1 → COL2 level-2 → COL3 level-3
-  // Level-1 y range 0..750, root centred at 307
   'standing': {
     nodes: [
       nd('root',         'selected',     COL0, 307, { emoji: '🤼', label: 'Standing' }),
-      // Level 1
       nd('st-dl',        'takedown',     COL1, 0,   { label: 'Double Leg' }),
       nd('st-sl',        'takedown',     COL1, 90,  { label: 'Single Leg' }),
       nd('st-ad',        'intermediate', COL1, 210, { label: 'Arm Drag' }),
       nd('st-guil',      'submission',   COL1, 330, { label: 'Guillotine' }),
       nd('st-cg',        'intermediate', COL1, 460, { label: 'Closed Guard' }),
       nd('st-sc',        'intermediate', COL1, 750, { label: 'Side Control (top)' }),
-      // Level 2 — from Arm Drag
       nd('st-back',      'intermediate', COL2, 160, { label: 'Back Mount (top)' }),
-      // Level 2 — from Closed Guard
       nd('st-2-tri',     'submission',   COL2, 410, { label: 'Triangle Choke' }),
       nd('st-2-arm',     'submission',   COL2, 500, { label: 'Armbar' }),
       nd('st-2-kim',     'submission',   COL2, 590, { label: 'Kimura' }),
-      // Level 2 — from Side Control (top)
       nd('st-2-mount',   'intermediate', COL2, 700, { label: 'Mount (top)' }),
       nd('st-2-ame',     'submission',   COL2, 790, { label: 'Americana' }),
       nd('st-2-darce',   'submission',   COL2, 880, { label: "D'Arce Choke" }),
-      // Level 3 — from Back Mount (top)
       nd('st-3-rnc',     'submission',   COL3, 115, { label: 'Rear Naked Choke' }),
       nd('st-3-bow',     'submission',   COL3, 205, { label: 'Bow & Arrow' }),
     ],
@@ -463,51 +434,110 @@ const POSITION_LABEL: Record<PositionKey, { emoji: string; label: string }> = {
   'standing':     { emoji: '🤼', label: 'Standing'     },
 };
 
-// ─── Inner Component ──────────────────────────────────────────────────────────
+// ─── Default View: Plain CSS Grid ────────────────────────────────────────────
 
-function GamePlanFlowInner() {
-  const { fitView } = useReactFlow();
-  const [nodes, setNodes] = useNodesState<Node>(DEFAULT_NODES);
-  const [edges, setEdges] = useEdgesState<Edge>([]);
-  const [selectedPosition, setSelectedPosition] = useState<PositionKey | null>(null);
+function DefaultView({ onSelect }: { onSelect: (pos: PositionKey) => void }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        padding: '16px',
+        boxSizing: 'border-box',
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '24px', paddingTop: '8px' }}>
+        <div style={{ fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>
+          Where are you?
+        </div>
+        <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
+          Tap a position to see your options
+        </div>
+      </div>
 
-  // Switch view and animate
-  const applyView = useCallback(
-    (pos: PositionKey | null) => {
-      if (pos === null) {
-        setNodes(DEFAULT_NODES);
-        setEdges([]);
-      } else {
-        const { nodes: sNodes, edges: sEdges } = SUBGRAPHS[pos];
-        setNodes(sNodes);
-        setEdges(sEdges);
-      }
-      setSelectedPosition(pos);
-      setTimeout(() => {
-        fitView({ padding: 0.22, duration: 400 });
-      }, 60);
-    },
-    [fitView, setNodes, setEdges]
+      {/* 2-column grid of position cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          flex: 1,
+          alignContent: 'start',
+        }}
+      >
+        {STARTING_POSITIONS.map((pos) => (
+          <button
+            key={pos.id}
+            onClick={() => onSelect(pos.id)}
+            style={{
+              backgroundColor: '#13131a',
+              border: '1.5px solid #2a2a3a',
+              borderRadius: '14px',
+              padding: '20px 16px',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s ease',
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '100px',
+            }}
+          >
+            <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
+            <span
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#e8e8ea',
+                textAlign: 'center',
+                lineHeight: 1.3,
+              }}
+            >
+              {pos.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
+}
 
-  // Initial fit
+// ─── Inner Component (React Flow — only used for drill-down) ──────────────────
+
+function GamePlanFlowInner({
+  selectedPosition,
+  onBack,
+}: {
+  selectedPosition: PositionKey;
+  onBack: () => void;
+}) {
+  const { fitView } = useReactFlow();
+  const [nodes, setNodes] = useNodesState<Node>([]);
+  const [edges, setEdges] = useEdgesState<Edge>([]);
+
+  // Load subgraph when position changes
   useEffect(() => {
+    const { nodes: sNodes, edges: sEdges } = SUBGRAPHS[selectedPosition];
+    setNodes(sNodes);
+    setEdges(sEdges);
     setTimeout(() => {
-      fitView({ padding: 0.18, duration: 300 });
-    }, 100);
-  }, [fitView]);
+      fitView({ padding: 0.1, duration: 400 });
+    }, 60);
+  }, [selectedPosition, fitView, setNodes, setEdges]);
 
   const handleNodeClick: NodeMouseHandler = useCallback(
-    (_, node) => {
-      if (node.type === 'startingPos' && selectedPosition === null) {
-        applyView(node.id as PositionKey);
-      }
-      // submission clicks are handled inside SubmissionNode itself
+    (_event, node) => {
+      // submission clicks handled inside SubmissionNode; no-op here
+      void node;
     },
-    [selectedPosition, applyView]
+    []
   );
 
-  const meta = selectedPosition ? POSITION_LABEL[selectedPosition] : null;
+  const meta = POSITION_LABEL[selectedPosition];
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -517,7 +547,7 @@ function GamePlanFlowInner() {
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
         fitView
-        fitViewOptions={{ padding: 0.18 }}
+        fitViewOptions={{ padding: 0.1 }}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
@@ -544,53 +574,38 @@ function GamePlanFlowInner() {
               minWidth: '240px',
             }}
           >
-            {!selectedPosition ? (
-              <>
-                <div style={{ color: '#e8e8ea', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.2px' }}>
-                  🥋 Where are you?
-                </div>
-                <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '3px' }}>
-                  Tap a position to see your options
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ color: '#e8e8ea', fontSize: '15px', fontWeight: 700 }}>
-                  {meta!.emoji} {meta!.label}
-                </div>
-                <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '3px' }}>
-                  Tap a move to search YouTube
-                </div>
-              </>
-            )}
+            <div style={{ color: '#e8e8ea', fontSize: '15px', fontWeight: 700 }}>
+              {meta.emoji} {meta.label}
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '3px' }}>
+              Tap a move to search YouTube
+            </div>
           </div>
         </Panel>
 
         {/* ── Back Button ── */}
-        {selectedPosition && (
-          <Panel position="top-left">
-            <button
-              onClick={() => applyView(null)}
-              style={{
-                background: 'rgba(12,12,18,0.90)',
-                color: '#e8e8ea',
-                border: '1px solid rgba(255,255,255,0.10)',
-                borderRadius: '8px',
-                padding: '8px 14px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                backdropFilter: 'blur(12px)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              ← Back
-            </button>
-          </Panel>
-        )}
+        <Panel position="top-left">
+          <button
+            onClick={onBack}
+            style={{
+              background: 'rgba(12,12,18,0.90)',
+              color: '#e8e8ea',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            ← Back
+          </button>
+        </Panel>
       </ReactFlow>
     </div>
   );
@@ -599,9 +614,20 @@ function GamePlanFlowInner() {
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 export default function GamePlanFlow() {
+  const [selectedPosition, setSelectedPosition] = useState<PositionKey | null>(null);
+
   return (
-    <ReactFlowProvider>
-      <GamePlanFlowInner />
-    </ReactFlowProvider>
+    <div style={{ width: '100%', height: '100%', backgroundColor: '#09090d' }}>
+      {selectedPosition === null ? (
+        <DefaultView onSelect={setSelectedPosition} />
+      ) : (
+        <ReactFlowProvider>
+          <GamePlanFlowInner
+            selectedPosition={selectedPosition}
+            onBack={() => setSelectedPosition(null)}
+          />
+        </ReactFlowProvider>
+      )}
+    </div>
   );
 }

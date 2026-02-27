@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
   ssr: false,
   loading: () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#4b5563", fontSize: "14px" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#6b7280", fontSize: "14px" }}>
       Loading game plan…
     </div>
   ),
@@ -92,20 +92,30 @@ type FlowPosition = {
   options: FlowOption[];
 };
 
+// Unified color system — same values used in Flow tab, Game Plan tab, and Tap List accent
 const TYPE_COLORS: Record<OptionType, string> = {
   submission: "#dc2626",
-  sweep: "#2563eb",
-  escape: "#16a34a",
-  transition: "#9333ea",
-  takedown: "#9333ea",
+  sweep:      "#2563eb",
+  escape:     "#16a34a",
+  transition: "#7c3aed",
+  takedown:   "#7c3aed",
 };
 
 const TYPE_LABELS: Record<OptionType, string> = {
   submission: "Submission",
-  sweep: "Sweep",
-  escape: "Escape",
+  sweep:      "Sweep",
+  escape:     "Escape",
   transition: "Transition",
-  takedown: "Takedown",
+  takedown:   "Takedown",
+};
+
+// Semantic background surfaces for each type
+const TYPE_SURFACES: Record<OptionType, string> = {
+  submission: "rgba(220,38,38,0.10)",
+  sweep:      "rgba(37,99,235,0.10)",
+  escape:     "rgba(22,163,74,0.10)",
+  transition: "rgba(124,58,237,0.10)",
+  takedown:   "rgba(124,58,237,0.10)",
 };
 
 const FLOW_POSITIONS: FlowPosition[] = [
@@ -223,10 +233,37 @@ const FLOW_POSITIONS: FlowPosition[] = [
   },
 ];
 
+// ─── Design Tokens ───────────────────────────────────────────────────────────
+
+const T = {
+  // Elevation layers — slightly purple-tinted for that premium dark feel
+  bg:       "#09090d",
+  surface:  "#131318",
+  elevated: "#1c1c24",
+  modal:    "#232329",
+
+  // Borders — low opacity white
+  borderSubtle:  "rgba(255,255,255,0.06)",
+  borderDefault: "rgba(255,255,255,0.09)",
+  borderStrong:  "rgba(255,255,255,0.14)",
+
+  // Text
+  textPrimary:   "#e8e8ea",
+  textSecondary: "#9ca3af",
+  textTertiary:  "#6b7280",
+  textDisabled:  "#4b5563",
+
+  // Semantic accents
+  red:    "#dc2626",
+  blue:   "#2563eb",
+  green:  "#16a34a",
+  purple: "#7c3aed",
+};
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("gameplan");
+  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("taplist");
 
   // Tap List state
   const [tapData, setTapData] = useState<TapData>({});
@@ -239,33 +276,21 @@ export default function Home() {
   // Flow state
   const [selectedPosition, setSelectedPosition] = useState<FlowPosition | null>(null);
 
-  // Load from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setTapData(JSON.parse(raw));
-      }
-    } catch {
-      // ignore
-    }
+      if (raw) setTapData(JSON.parse(raw));
+    } catch { /* ignore */ }
     setHydrated(true);
   }, []);
 
-  // Save to localStorage on change
   useEffect(() => {
-    if (hydrated) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tapData));
-    }
+    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(tapData));
   }, [tapData, hydrated]);
 
-  const totalCollected = SUBMISSIONS.filter(
-    (s) => (tapData[s.name]?.length ?? 0) > 0
-  ).length;
-  const totalTaps = Object.values(tapData).reduce(
-    (sum, entries) => sum + entries.length,
-    0
-  );
+  const totalCollected = SUBMISSIONS.filter((s) => (tapData[s.name]?.length ?? 0) > 0).length;
+  const totalTaps = Object.values(tapData).reduce((sum, entries) => sum + entries.length, 0);
+  const progressPct = Math.round((totalCollected / SUBMISSIONS.length) * 100);
 
   function openModal(name: string) {
     setModalSub(name);
@@ -282,10 +307,7 @@ export default function Home() {
     if (!modalSub) return;
     setTapData((prev) => {
       const existing = prev[modalSub] ?? [];
-      return {
-        ...prev,
-        [modalSub]: [...existing, { date: modalDate, note: modalNote }],
-      };
+      return { ...prev, [modalSub]: [...existing, { date: modalDate, note: modalNote }] };
     });
     closeModal();
   }
@@ -294,120 +316,90 @@ export default function Home() {
     let topMove = "none";
     let topCount = 0;
     for (const [name, entries] of Object.entries(tapData)) {
-      if (entries.length > topCount) {
-        topCount = entries.length;
-        topMove = name;
-      }
+      if (entries.length > topCount) { topCount = entries.length; topMove = name; }
     }
     const text =
       totalCollected === 0
-        ? "I'm just getting started on JJ Game Plan. 🥋"
-        : `I've tapped ${totalCollected} unique submissions on JJ Game Plan. My most caught: ${topMove}. 🥋`;
+        ? "I'm just getting started on Jiu Jitsu Tap List. 🥋"
+        : `🥋 ${totalCollected}/${SUBMISSIONS.length} submissions collected on Jiu Jitsu Tap List (${progressPct}%). My most caught: ${topMove} ×${topCount}.`;
 
     setShareMsg(text);
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).catch(() => {});
-    }
-    setTimeout(() => setShareMsg(""), 3000);
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+    setTimeout(() => setShareMsg(""), 4000);
   }
 
   function youtubeUrl(name: string): string {
-    const query = encodeURIComponent(`bjj ${name} tutorial`);
-    return `https://www.youtube.com/results?search_query=${query}`;
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(`bjj ${name} tutorial`)}`;
   }
 
   if (!hydrated) return null;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#0a0a0a",
-        color: "#fff",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        padding: "0 0 60px 0",
-      }}
-    >
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: T.bg,
+      color: T.textPrimary,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      padding: "0 0 80px 0",
+    }}>
+
       {/* ── Sticky Header ── */}
-      <div
-        style={{
-          padding: "24px 16px 0",
-          borderBottom: "1px solid #1f1f1f",
-          position: "sticky",
-          top: 0,
-          backgroundColor: "#0a0a0a",
-          zIndex: 10,
-        }}
-      >
-        <h1
-          style={{
-            margin: "0 0 12px 0",
-            fontSize: "24px",
-            fontWeight: 800,
-            letterSpacing: "-0.5px",
-            color: "#fff",
-          }}
-        >
-          🔗 JJ Game Plan
+      <div style={{
+        padding: "20px 16px 12px",
+        borderBottom: `1px solid ${T.borderSubtle}`,
+        position: "sticky",
+        top: 0,
+        backgroundColor: T.bg,
+        zIndex: 10,
+        backdropFilter: "blur(12px)",
+      }}>
+        <h1 style={{
+          margin: "0 0 14px 0",
+          fontSize: "22px",
+          fontWeight: 800,
+          letterSpacing: "-0.5px",
+          color: T.textPrimary,
+        }}>
+          🥋 Jiu Jitsu Tap List
         </h1>
 
-        {/* Tab bar */}
-        <div style={{ display: "flex", gap: "4px" }}>
-          <button
-            onClick={() => setActiveTab("gameplan")}
-            style={{
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: 700,
-              fontFamily: "inherit",
-              cursor: "pointer",
-              border: "none",
-              borderRadius: "6px 6px 0 0",
-              backgroundColor: activeTab === "gameplan" ? "#1a1a1a" : "transparent",
-              color: activeTab === "gameplan" ? "#fff" : "#6b7280",
-              borderBottom: activeTab === "gameplan" ? "2px solid #7c3aed" : "2px solid transparent",
-              transition: "all 0.15s ease",
-            }}
-          >
-            🔗 Game Plan
-          </button>
-          <button
-            onClick={() => { setActiveTab("flow"); setSelectedPosition(null); }}
-            style={{
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: 700,
-              fontFamily: "inherit",
-              cursor: "pointer",
-              border: "none",
-              borderRadius: "6px 6px 0 0",
-              backgroundColor: activeTab === "flow" ? "#1a1a1a" : "transparent",
-              color: activeTab === "flow" ? "#fff" : "#6b7280",
-              borderBottom: activeTab === "flow" ? "2px solid #9333ea" : "2px solid transparent",
-              transition: "all 0.15s ease",
-            }}
-          >
-            🗺️ Flow
-          </button>
-          <button
-            onClick={() => setActiveTab("taplist")}
-            style={{
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: 700,
-              fontFamily: "inherit",
-              cursor: "pointer",
-              border: "none",
-              borderRadius: "6px 6px 0 0",
-              backgroundColor: activeTab === "taplist" ? "#1a1a1a" : "transparent",
-              color: activeTab === "taplist" ? "#fff" : "#6b7280",
-              borderBottom: activeTab === "taplist" ? "2px solid #dc2626" : "2px solid transparent",
-              transition: "all 0.15s ease",
-            }}
-          >
-            🥋 Tap List
-          </button>
+        {/* ── Pill Tab Bar ── */}
+        <div style={{
+          display: "flex",
+          gap: "2px",
+          backgroundColor: "rgba(255,255,255,0.05)",
+          padding: "3px",
+          borderRadius: "10px",
+          border: `1px solid ${T.borderSubtle}`,
+        }}>
+          {(["taplist", "flow", "gameplan"] as const).map((tab) => {
+            const labels = { taplist: "🥋 Tap List", flow: "🗺️ Flow", gameplan: "🔗 Game Plan" };
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); if (tab === "flow") setSelectedPosition(null); }}
+                style={{
+                  flex: 1,
+                  padding: "8px 8px",
+                  fontSize: "13px",
+                  fontWeight: isActive ? 700 : 500,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  border: "none",
+                  borderRadius: "8px",
+                  backgroundColor: isActive ? T.elevated : "transparent",
+                  color: isActive ? T.textPrimary : T.textTertiary,
+                  transition: "all 0.15s ease",
+                  boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.5)" : "none",
+                  WebkitTapHighlightColor: "transparent",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {labels[tab]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -416,54 +408,106 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       {activeTab === "taplist" && (
         <>
-          {/* Stats bar */}
-          <div
-            style={{
-              padding: "12px 16px",
-              borderBottom: "1px solid #1f1f1f",
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <span style={{ color: "#dc2626", fontWeight: 700, fontSize: "14px" }}>
-              {totalCollected}/{SUBMISSIONS.length} collected
-            </span>
-            <span style={{ color: "#6b7280", fontSize: "14px" }}>
-              {totalTaps} total taps
-            </span>
+          {/* Stats + Share bar */}
+          <div style={{
+            padding: "12px 16px",
+            borderBottom: `1px solid ${T.borderSubtle}`,
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}>
+            {/* Progress block */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "6px" }}>
+                <span style={{ color: T.red, fontWeight: 700, fontSize: "15px" }}>
+                  {totalCollected}<span style={{ color: T.textTertiary, fontSize: "13px", fontWeight: 400 }}>/{SUBMISSIONS.length}</span>
+                </span>
+                <span style={{ color: T.textTertiary, fontSize: "12px" }}>
+                  {totalTaps} tap{totalTaps !== 1 ? "s" : ""} logged
+                </span>
+                <span style={{ color: T.textDisabled, fontSize: "12px", marginLeft: "auto" }}>
+                  {progressPct}%
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div style={{
+                height: "3px",
+                backgroundColor: "rgba(255,255,255,0.08)",
+                borderRadius: "2px",
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  height: "100%",
+                  width: `${progressPct}%`,
+                  backgroundColor: T.red,
+                  borderRadius: "2px",
+                  transition: "width 0.4s ease",
+                  boxShadow: "0 0 6px rgba(220,38,38,0.6)",
+                }} />
+              </div>
+            </div>
+
+            {/* Share button — prominent */}
             <button
               onClick={handleShare}
               style={{
-                marginLeft: "auto",
-                backgroundColor: "#1f1f1f",
-                color: "#d1d5db",
-                border: "1px solid #374151",
-                borderRadius: "6px",
-                padding: "4px 12px",
+                backgroundColor: T.elevated,
+                color: T.textPrimary,
+                border: `1px solid ${T.borderDefault}`,
+                borderRadius: "8px",
+                padding: "8px 14px",
                 fontSize: "13px",
+                fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                flexShrink: 0,
+                transition: "all 0.15s ease",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
-              Share 📤
+              Share <span style={{ fontSize: "14px" }}>📤</span>
             </button>
           </div>
 
+          {/* Share confirmation */}
           {shareMsg && (
-            <div
-              style={{
-                margin: "8px 16px",
-                backgroundColor: "#1f1f1f",
-                border: "1px solid #374151",
-                borderRadius: "6px",
-                padding: "8px 12px",
-                fontSize: "13px",
-                color: "#d1d5db",
-              }}
-            >
-              Copied! {shareMsg}
+            <div style={{
+              margin: "8px 16px",
+              backgroundColor: T.elevated,
+              border: `1px solid ${T.borderDefault}`,
+              borderLeft: `3px solid ${T.green}`,
+              borderRadius: "8px",
+              padding: "10px 12px",
+              fontSize: "13px",
+              color: T.textSecondary,
+              lineHeight: 1.5,
+            }}>
+              ✓ Copied to clipboard
+            </div>
+          )}
+
+          {/* Empty state — only when nothing collected yet */}
+          {totalCollected === 0 && (
+            <div style={{
+              margin: "32px 16px 8px",
+              padding: "32px 24px",
+              backgroundColor: T.surface,
+              border: `1px solid ${T.borderSubtle}`,
+              borderRadius: "12px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "48px", marginBottom: "12px", opacity: 0.4 }}>🥋</div>
+              <div style={{ fontSize: "17px", fontWeight: 700, color: T.textPrimary, marginBottom: "6px" }}>
+                No taps logged yet
+              </div>
+              <div style={{ fontSize: "14px", color: T.textTertiary, lineHeight: 1.6 }}>
+                Tap any submission below to log your first one.<br />
+                {SUBMISSIONS.length} moves to collect.
+              </div>
             </div>
           )}
 
@@ -471,27 +515,31 @@ export default function Home() {
           <div style={{ padding: "0 16px" }}>
             {CATEGORIES.map((category) => {
               const subs = SUBMISSIONS.filter((s) => s.category === category);
+              const categoryCollected = subs.filter((s) => (tapData[s.name]?.length ?? 0) > 0).length;
               return (
                 <div key={category}>
-                  <div
-                    style={{
-                      padding: "20px 0 8px",
+                  <div style={{
+                    padding: "20px 0 8px",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "8px",
+                  }}>
+                    <span style={{
                       fontSize: "11px",
                       fontWeight: 700,
                       letterSpacing: "1.5px",
-                      color: "#4b5563",
+                      color: T.textDisabled,
                       textTransform: "uppercase",
-                    }}
-                  >
-                    {category}
+                    }}>
+                      {category}
+                    </span>
+                    <span style={{ fontSize: "11px", color: T.textDisabled, opacity: 0.7 }}>
+                      {categoryCollected}/{subs.length}
+                    </span>
                   </div>
 
                   <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(2, 1fr)",
-                      gap: "10px",
-                    }}
+                    style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}
                     className="submissions-grid"
                   >
                     {subs.map((sub) => {
@@ -504,20 +552,14 @@ export default function Home() {
                           key={sub.name}
                           onClick={() => openModal(sub.name)}
                           style={{
-                            backgroundColor: "#1a1a1a",
-                            border: collected
-                              ? "1px solid #2a2a2a"
-                              : "1px solid #2a2a2a",
-                            borderLeft: collected
-                              ? "3px solid #dc2626"
-                              : "1px solid #2a2a2a",
-                            borderRadius: "8px",
+                            backgroundColor: collected ? T.surface : T.surface,
+                            border: `1px solid ${collected ? T.borderDefault : T.borderSubtle}`,
+                            borderLeft: collected ? `3px solid ${T.red}` : `1px solid ${T.borderSubtle}`,
+                            borderRadius: "10px",
                             padding: "12px 12px 10px",
                             cursor: "pointer",
                             position: "relative",
-                            boxShadow: collected
-                              ? "0 0 12px rgba(220, 38, 38, 0.18)"
-                              : "none",
+                            boxShadow: collected ? `0 0 0 1px rgba(220,38,38,0.08), 0 2px 8px rgba(0,0,0,0.35)` : "none",
                             transition: "all 0.15s ease",
                             userSelect: "none",
                             WebkitTapHighlightColor: "transparent",
@@ -525,58 +567,43 @@ export default function Home() {
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "space-between",
+                            opacity: collected ? 1 : 0.65,
                           }}
                         >
                           {collected && (
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              style={{
-                                position: "absolute",
-                                top: "8px",
-                                right: "8px",
-                                backgroundColor: "#dc2626",
-                                color: "#fff",
-                                borderRadius: "10px",
-                                padding: "1px 7px",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                lineHeight: "18px",
-                              }}
-                            >
+                            <div style={{
+                              position: "absolute",
+                              top: "8px",
+                              right: "8px",
+                              backgroundColor: T.red,
+                              color: "#fff",
+                              borderRadius: "10px",
+                              padding: "1px 7px",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              lineHeight: "18px",
+                            }}>
                               ×{count}
                             </div>
                           )}
 
-                          <div
-                            style={{
-                              fontSize: "14px",
-                              fontWeight: 700,
-                              color: collected ? "#fff" : "#9ca3af",
-                              lineHeight: "1.3",
-                              paddingRight: collected ? "28px" : "0",
-                            }}
-                          >
+                          <div style={{
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            color: collected ? T.textPrimary : T.textSecondary,
+                            lineHeight: "1.35",
+                            paddingRight: collected ? "28px" : "0",
+                          }}>
                             {sub.name}
                           </div>
 
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "flex-end",
-                              marginTop: "6px",
-                            }}
-                          >
+                          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
                             <a
                               href={youtubeUrl(sub.name)}
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              style={{
-                                fontSize: "16px",
-                                opacity: 0.5,
-                                textDecoration: "none",
-                                lineHeight: 1,
-                              }}
+                              style={{ fontSize: "15px", opacity: 0.45, textDecoration: "none", lineHeight: 1 }}
                               title={`Watch ${sub.name} tutorial`}
                             >
                               🎥
@@ -599,29 +626,26 @@ export default function Home() {
       {activeTab === "flow" && (
         <div style={{ padding: "0 16px" }}>
           {!selectedPosition ? (
-            /* ── Position List ── */
             <>
-              <div
-                style={{
-                  padding: "16px 0 8px",
-                  fontSize: "13px",
-                  color: "#6b7280",
-                  lineHeight: "1.5",
-                }}
-              >
+              <div style={{
+                padding: "16px 0 10px",
+                fontSize: "13px",
+                color: T.textTertiary,
+                lineHeight: "1.5",
+              }}>
                 Where are you on the mat? Pick a position to see your options.
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "16px" }}>
                 {FLOW_POSITIONS.map((pos) => (
                   <button
                     key={pos.id}
                     onClick={() => setSelectedPosition(pos)}
                     style={{
-                      backgroundColor: "#1a1a1a",
-                      border: "1px solid #2a2a2a",
+                      backgroundColor: T.surface,
+                      border: `1px solid ${T.borderSubtle}`,
                       borderRadius: "10px",
-                      padding: "16px",
+                      padding: "14px 16px",
                       cursor: "pointer",
                       fontFamily: "inherit",
                       display: "flex",
@@ -633,115 +657,123 @@ export default function Home() {
                       WebkitTapHighlightColor: "transparent",
                     }}
                   >
-                    <span style={{ fontSize: "28px", lineHeight: 1 }}>{pos.emoji}</span>
-                    <div>
-                      <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>
+                    <span style={{ fontSize: "26px", lineHeight: 1, flexShrink: 0 }}>{pos.emoji}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: T.textPrimary }}>
                         {pos.label}
                       </div>
-                      <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px" }}>
+                      <div style={{ fontSize: "12px", color: T.textTertiary, marginTop: "2px" }}>
                         {pos.options.length} options
                       </div>
                     </div>
-                    <span style={{ marginLeft: "auto", color: "#4b5563", fontSize: "18px" }}>›</span>
+                    <span style={{ color: T.textDisabled, fontSize: "18px", flexShrink: 0 }}>›</span>
                   </button>
                 ))}
               </div>
             </>
           ) : (
-            /* ── Position Detail ── */
             <>
-              {/* Back button + "You are here" */}
-              <div style={{ padding: "16px 0 0" }}>
+              <div style={{ padding: "14px 0 0" }}>
                 <button
                   onClick={() => setSelectedPosition(null)}
                   style={{
                     backgroundColor: "transparent",
                     border: "none",
-                    color: "#9333ea",
+                    color: T.purple,
                     fontSize: "14px",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     fontFamily: "inherit",
                     cursor: "pointer",
                     padding: "0 0 12px 0",
                     display: "flex",
                     alignItems: "center",
                     gap: "4px",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
                   ‹ All Positions
                 </button>
 
-                <div
-                  style={{
-                    backgroundColor: "#1a1a1a",
-                    border: "1px solid #2a2a2a",
-                    borderLeft: "3px solid #9333ea",
-                    borderRadius: "8px",
-                    padding: "14px 16px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", color: "#9333ea", textTransform: "uppercase", marginBottom: "4px" }}>
+                <div style={{
+                  backgroundColor: T.surface,
+                  border: `1px solid ${T.borderSubtle}`,
+                  borderLeft: `3px solid ${T.purple}`,
+                  borderRadius: "10px",
+                  padding: "14px 16px",
+                  marginBottom: "12px",
+                  boxShadow: `0 0 0 1px rgba(124,58,237,0.08)`,
+                }}>
+                  <div style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    letterSpacing: "1.5px",
+                    color: T.purple,
+                    textTransform: "uppercase",
+                    marginBottom: "4px",
+                  }}>
                     You are here
                   </div>
-                  <div style={{ fontSize: "20px", fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{
+                    fontSize: "19px",
+                    fontWeight: 800,
+                    color: T.textPrimary,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}>
                     <span>{selectedPosition.emoji}</span>
                     <span>{selectedPosition.label}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Options list */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "16px" }}>
                 {selectedPosition.options.map((opt, i) => {
                   const color = TYPE_COLORS[opt.type];
                   const label = TYPE_LABELS[opt.type];
+                  const surface = TYPE_SURFACES[opt.type];
                   return (
                     <div
                       key={i}
                       style={{
-                        backgroundColor: "#1a1a1a",
-                        border: "1px solid #2a2a2a",
+                        backgroundColor: T.surface,
+                        border: `1px solid ${T.borderSubtle}`,
                         borderLeft: `3px solid ${color}`,
-                        borderRadius: "8px",
+                        borderRadius: "10px",
                         padding: "14px 14px 12px",
                         display: "flex",
                         alignItems: "center",
                         gap: "12px",
                       }}
                     >
-                      {/* Name + badge */}
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", lineHeight: "1.3" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: T.textPrimary, lineHeight: "1.35" }}>
                           {opt.name}
                         </div>
-                        <div
-                          style={{
-                            display: "inline-block",
-                            marginTop: "5px",
-                            backgroundColor: color + "22",
-                            color: color,
-                            border: `1px solid ${color}55`,
-                            borderRadius: "4px",
-                            padding: "1px 7px",
-                            fontSize: "11px",
-                            fontWeight: 700,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                          }}
-                        >
+                        <div style={{
+                          display: "inline-block",
+                          marginTop: "5px",
+                          backgroundColor: surface,
+                          color: color,
+                          border: `1px solid ${color}44`,
+                          borderRadius: "4px",
+                          padding: "1px 7px",
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          letterSpacing: "0.6px",
+                          textTransform: "uppercase",
+                        }}>
                           {label}
                         </div>
                       </div>
 
-                      {/* YouTube button */}
                       <a
                         href={youtubeUrl(opt.name)}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
-                          fontSize: "22px",
-                          opacity: 0.6,
+                          fontSize: "20px",
+                          opacity: 0.55,
                           textDecoration: "none",
                           lineHeight: 1,
                           flexShrink: 0,
@@ -763,21 +795,17 @@ export default function Home() {
           GAME PLAN TAB
       ══════════════════════════════════════════ */}
       {activeTab === "gameplan" && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            flexDirection: "column",
-            backgroundColor: "#0a0a0a",
-          }}
-        >
-          {/* Sticky header replica for positioning */}
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: T.bg,
+        }}>
           <div style={{ flexShrink: 0, height: "93px" }} />
-          {/* Full-height flow canvas */}
           <div style={{ flex: 1, overflow: "hidden" }}>
             <GamePlanFlow />
           </div>
@@ -791,57 +819,43 @@ export default function Home() {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.75)",
+            backgroundColor: "rgba(0,0,0,0.80)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 100,
             padding: "16px",
+            backdropFilter: "blur(4px)",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: "#1a1a1a",
-              border: "1px solid #2a2a2a",
-              borderRadius: "12px",
+              backgroundColor: T.modal,
+              border: `1px solid ${T.borderDefault}`,
+              borderRadius: "14px",
               padding: "24px",
               width: "100%",
               maxWidth: "360px",
+              boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
             }}
           >
-            <h2
-              style={{
-                margin: "0 0 4px 0",
-                fontSize: "18px",
-                fontWeight: 800,
-                color: "#fff",
-              }}
-            >
-              Log a tap! 🥋
+            <h2 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 800, color: T.textPrimary }}>
+              Log a tap!
             </h2>
-            <p
-              style={{
-                margin: "0 0 20px 0",
-                fontSize: "14px",
-                color: "#dc2626",
-                fontWeight: 700,
-              }}
-            >
+            <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: T.red, fontWeight: 700 }}>
               {modalSub}
             </p>
 
-            <label
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#6b7280",
-                marginBottom: "6px",
-                textTransform: "uppercase",
-                letterSpacing: "0.8px",
-              }}
-            >
+            <label style={{
+              display: "block",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: T.textTertiary,
+              marginBottom: "6px",
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
+            }}>
               Date
             </label>
             <input
@@ -850,11 +864,11 @@ export default function Home() {
               onChange={(e) => setModalDate(e.target.value)}
               style={{
                 width: "100%",
-                backgroundColor: "#0a0a0a",
-                border: "1px solid #374151",
-                borderRadius: "6px",
-                padding: "8px 10px",
-                color: "#fff",
+                backgroundColor: T.surface,
+                border: `1px solid ${T.borderDefault}`,
+                borderRadius: "8px",
+                padding: "9px 10px",
+                color: T.textPrimary,
                 fontSize: "14px",
                 marginBottom: "16px",
                 fontFamily: "inherit",
@@ -862,17 +876,15 @@ export default function Home() {
               }}
             />
 
-            <label
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#6b7280",
-                marginBottom: "6px",
-                textTransform: "uppercase",
-                letterSpacing: "0.8px",
-              }}
-            >
+            <label style={{
+              display: "block",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: T.textTertiary,
+              marginBottom: "6px",
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
+            }}>
               Note (optional)
             </label>
             <textarea
@@ -882,11 +894,11 @@ export default function Home() {
               rows={3}
               style={{
                 width: "100%",
-                backgroundColor: "#0a0a0a",
-                border: "1px solid #374151",
-                borderRadius: "6px",
-                padding: "8px 10px",
-                color: "#fff",
+                backgroundColor: T.surface,
+                border: `1px solid ${T.borderDefault}`,
+                borderRadius: "8px",
+                padding: "9px 10px",
+                color: T.textPrimary,
                 fontSize: "14px",
                 fontFamily: "inherit",
                 resize: "none",
@@ -895,20 +907,21 @@ export default function Home() {
               }}
             />
 
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "8px" }}>
               <button
                 onClick={closeModal}
                 style={{
                   flex: 1,
-                  backgroundColor: "#0a0a0a",
-                  color: "#6b7280",
-                  border: "1px solid #374151",
-                  borderRadius: "8px",
-                  padding: "12px",
+                  backgroundColor: T.surface,
+                  color: T.textTertiary,
+                  border: `1px solid ${T.borderDefault}`,
+                  borderRadius: "10px",
+                  padding: "13px",
                   fontSize: "15px",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Cancel
@@ -917,15 +930,17 @@ export default function Home() {
                 onClick={confirmTap}
                 style={{
                   flex: 2,
-                  backgroundColor: "#dc2626",
+                  background: `linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)`,
                   color: "#fff",
                   border: "none",
-                  borderRadius: "8px",
-                  padding: "12px",
+                  borderRadius: "10px",
+                  padding: "13px",
                   fontSize: "15px",
                   fontWeight: 700,
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  boxShadow: "0 0 16px rgba(220,38,38,0.35)",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 Confirm Tap ✓
@@ -935,7 +950,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Responsive grid styles */}
+      {/* Responsive grid */}
       <style>{`
         @media (min-width: 480px) {
           .submissions-grid {
@@ -948,7 +963,10 @@ export default function Home() {
           }
         }
         input[type="date"]::-webkit-calendar-picker-indicator {
-          filter: invert(1);
+          filter: invert(0.6);
+        }
+        button:active {
+          transform: scale(0.98);
         }
       `}</style>
     </div>

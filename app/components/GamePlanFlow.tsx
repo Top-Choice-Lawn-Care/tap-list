@@ -36,22 +36,23 @@ function StartingPosNode({ data }: { data: any }) {
   return (
     <div
       style={{
-        background: '#1a1a2e',
-        border: '2px solid #4a4a8a',
+        background: '#16162a',
+        border: '1px solid rgba(124,58,237,0.35)',
         borderRadius: '12px',
         width: '200px',
-        height: '70px',
+        height: '72px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '10px',
         cursor: 'pointer',
         userSelect: 'none',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
       <span style={{ fontSize: '22px', lineHeight: 1 }}>{data.emoji}</span>
-      <span style={{ color: '#fff', fontSize: '13px', fontWeight: 700, lineHeight: 1.3 }}>{data.label}</span>
+      <span style={{ color: '#e8e8ea', fontSize: '13px', fontWeight: 600, lineHeight: 1.3 }}>{data.label}</span>
       <Handle type="source" position={Position.Right} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
     </div>
   );
@@ -62,22 +63,22 @@ function SelectedNode({ data }: { data: any }) {
   return (
     <div
       style={{
-        background: '#1e1e3f',
-        border: '3px solid #ffffff',
+        background: '#1e1e34',
+        border: '2px solid #7c3aed',
         borderRadius: '12px',
         width: '200px',
-        height: '70px',
+        height: '72px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '10px',
-        boxShadow: '0 0 20px rgba(255,255,255,0.3)',
+        boxShadow: '0 0 16px rgba(124,58,237,0.30), 0 2px 12px rgba(0,0,0,0.5)',
         userSelect: 'none',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
       <span style={{ fontSize: '22px', lineHeight: 1 }}>{data.emoji}</span>
-      <span style={{ color: '#fff', fontSize: '13px', fontWeight: 700, lineHeight: 1.3 }}>{data.label}</span>
+      <span style={{ color: '#e8e8ea', fontSize: '13px', fontWeight: 700, lineHeight: 1.3 }}>{data.label}</span>
       <Handle type="source" position={Position.Right} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
     </div>
   );
@@ -88,15 +89,15 @@ function IntermediateNode({ data }: { data: any }) {
   return (
     <div
       style={{
-        background: '#0f2d1a',
-        border: '2px solid #22c55e',
+        background: '#0e2418',
+        border: '1px solid rgba(22,163,74,0.50)',
         borderRadius: '10px',
         width: '170px',
         height: '56px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: '#fff',
+        color: '#86efac',
         fontSize: '12px',
         fontWeight: 600,
         textAlign: 'center',
@@ -127,22 +128,22 @@ function SubmissionNode({ data }: { data: any }) {
     <div
       onClick={handleClick}
       style={{
-        background: '#2d0a0a',
-        border: '2px solid #dc2626',
+        background: '#210808',
+        border: '1px solid rgba(220,38,38,0.55)',
         borderRadius: '999px',
-        width: '150px',
-        height: '42px',
+        width: '152px',
+        height: '44px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '5px',
         cursor: 'pointer',
         userSelect: 'none',
+        boxShadow: '0 0 8px rgba(220,38,38,0.18)',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
-      <span style={{ fontSize: '8px', lineHeight: 1 }}>🔴</span>
-      <span style={{ color: '#fca5a5', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      <span style={{ color: '#fca5a5', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', padding: '0 8px' }}>
         {data.label}
       </span>
     </div>
@@ -163,22 +164,22 @@ function TakedownNode({ data }: { data: any }) {
     <div
       onClick={handleClick}
       style={{
-        background: '#2d1458',
-        border: '2px solid #9333ea',
+        background: '#180e30',
+        border: '1px solid rgba(124,58,237,0.55)',
         borderRadius: '999px',
-        width: '150px',
-        height: '42px',
+        width: '152px',
+        height: '44px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '5px',
         cursor: 'pointer',
         userSelect: 'none',
+        boxShadow: '0 0 8px rgba(124,58,237,0.18)',
       }}
     >
       <Handle type="target" position={Position.Left} style={{ visibility: 'hidden', width: 0, height: 0, minWidth: 0, minHeight: 0 }} />
-      <span style={{ fontSize: '8px', lineHeight: 1 }}>🟣</span>
-      <span style={{ color: '#d8b4fe', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      <span style={{ color: '#c4b5fd', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', padding: '0 8px' }}>
         {data.label}
       </span>
     </div>
@@ -227,7 +228,7 @@ function ed(
     animated: !isSubmission,
     type: 'smoothstep',
     style: {
-      stroke: isSubmission ? '#dc2626' : '#4a7cc7',
+      stroke: isSubmission ? '#dc2626' : '#5b4a8a',
       strokeWidth: isSubmission ? 2 : 1.5,
     },
     labelStyle: { fill: '#e5e7eb', fontSize: 10, fontWeight: 600 },
@@ -525,10 +526,10 @@ function GamePlanFlowInner() {
         zoomOnPinch
         minZoom={0.1}
         maxZoom={3}
-        style={{ backgroundColor: '#080808' }}
+        style={{ backgroundColor: '#09090d' }}
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} color="#1a1a1a" gap={20} size={1.5} />
+        <Background variant={BackgroundVariant.Dots} color="#1a1a26" gap={20} size={1.2} />
 
         {/* ── Header ── */}
         <Panel position="top-center">
@@ -536,29 +537,29 @@ function GamePlanFlowInner() {
             style={{
               textAlign: 'center',
               padding: '10px 20px',
-              background: 'rgba(10,10,18,0.88)',
-              border: '1px solid #2a2a4a',
+              background: 'rgba(12,12,18,0.90)',
+              border: '1px solid rgba(255,255,255,0.09)',
               borderRadius: '10px',
-              backdropFilter: 'blur(6px)',
-              minWidth: '260px',
+              backdropFilter: 'blur(12px)',
+              minWidth: '240px',
             }}
           >
             {!selectedPosition ? (
               <>
-                <div style={{ color: '#ffffff', fontSize: '18px', fontWeight: 800, letterSpacing: '0.06em' }}>
-                  🥋 WHERE ARE YOU?
+                <div style={{ color: '#e8e8ea', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.2px' }}>
+                  🥋 Where are you?
                 </div>
                 <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '3px' }}>
-                  tap a position to see your options
+                  Tap a position to see your options
                 </div>
               </>
             ) : (
               <>
-                <div style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700 }}>
+                <div style={{ color: '#e8e8ea', fontSize: '15px', fontWeight: 700 }}>
                   {meta!.emoji} {meta!.label}
                 </div>
                 <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '3px' }}>
-                  tap a move to search YouTube
+                  Tap a move to search YouTube
                 </div>
               </>
             )}
@@ -571,16 +572,16 @@ function GamePlanFlowInner() {
             <button
               onClick={() => applyView(null)}
               style={{
-                background: 'rgba(10,10,18,0.88)',
-                color: '#ffffff',
-                border: '1px solid #444',
+                background: 'rgba(12,12,18,0.90)',
+                color: '#e8e8ea',
+                border: '1px solid rgba(255,255,255,0.10)',
                 borderRadius: '8px',
                 padding: '8px 14px',
                 fontSize: '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                backdropFilter: 'blur(6px)',
+                backdropFilter: 'blur(12px)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',

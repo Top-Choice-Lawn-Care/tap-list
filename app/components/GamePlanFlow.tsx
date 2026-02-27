@@ -242,11 +242,11 @@ function ed(
 
 const DEFAULT_NODES: Node[] = [
   nd('closed-guard', 'startingPos', 0,   0,   { emoji: '🥋', label: 'Closed Guard' }),
-  nd('half-guard',   'startingPos', 260, 0,   { emoji: '🤼', label: 'Half Guard'   }),
+  nd('half-guard',   'startingPos', 260, 0,   { emoji: '½', label: 'Half Guard'   }),
   nd('side-control', 'startingPos', 520, 0,   { emoji: '😬', label: 'Side Control' }),
   nd('mount',        'startingPos', 0,   150, { emoji: '😰', label: 'Mount'        }),
   nd('back-taken',   'startingPos', 260, 150, { emoji: '😱', label: 'Back Taken'   }),
-  nd('standing',     'startingPos', 520, 150, { emoji: '🧍', label: 'Standing'     }),
+  nd('standing',     'startingPos', 520, 150, { emoji: '🤼', label: 'Standing'     }),
 ];
 
 // ─── Subgraph Definitions ─────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
   // Root at y=85 (3 items at y=0,85,170)
   'half-guard': {
     nodes: [
-      nd('root',        'selected',     COL0, 85,  { emoji: '🤼', label: 'Half Guard' }),
+      nd('root',        'selected',     COL0, 85,  { emoji: '½', label: 'Half Guard' }),
       // Level 1
       nd('hg-back',     'intermediate', COL1, 0,   { label: 'Back Mount (top)' }),
       nd('hg-kim',      'submission',   COL1, 85,  { label: 'Kimura' }),
@@ -409,7 +409,7 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
   // Level-1 y range 0..750, root centred at 307
   'standing': {
     nodes: [
-      nd('root',         'selected',     COL0, 307, { emoji: '🧍', label: 'Standing' }),
+      nd('root',         'selected',     COL0, 307, { emoji: '🤼', label: 'Standing' }),
       // Level 1
       nd('st-dl',        'takedown',     COL1, 0,   { label: 'Double Leg' }),
       nd('st-sl',        'takedown',     COL1, 90,  { label: 'Single Leg' }),
@@ -455,11 +455,11 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
 
 const POSITION_LABEL: Record<PositionKey, { emoji: string; label: string }> = {
   'closed-guard': { emoji: '🥋', label: 'Closed Guard' },
-  'half-guard':   { emoji: '🤼', label: 'Half Guard'   },
+  'half-guard':   { emoji: '½', label: 'Half Guard'   },
   'side-control': { emoji: '😬', label: 'Side Control' },
   'mount':        { emoji: '😰', label: 'Mount'        },
   'back-taken':   { emoji: '😱', label: 'Back Taken'   },
-  'standing':     { emoji: '🧍', label: 'Standing'     },
+  'standing':     { emoji: '🤼', label: 'Standing'     },
 };
 
 // ─── Inner Component ──────────────────────────────────────────────────────────

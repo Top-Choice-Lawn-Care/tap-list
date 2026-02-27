@@ -263,7 +263,7 @@ const T = {
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("taplist");
+  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("gameplan");
 
   // Tap List state
   const [tapData, setTapData] = useState<TapData>({});
@@ -320,8 +320,8 @@ export default function Home() {
     }
     const text =
       totalCollected === 0
-        ? "I'm just getting started on Jiu Jitsu Tap List. 🥋"
-        : `🥋 ${totalCollected}/${SUBMISSIONS.length} submissions collected on Jiu Jitsu Tap List (${progressPct}%). My most caught: ${topMove} ×${topCount}.`;
+        ? "I'm just getting started on JJ Game Plan. 🥋"
+        : `🥋 ${totalCollected}/${SUBMISSIONS.length} submissions collected on JJ Game Plan (${progressPct}%). My most caught: ${topMove} ×${topCount}.`;
 
     setShareMsg(text);
     if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
@@ -360,7 +360,7 @@ export default function Home() {
           letterSpacing: "-0.5px",
           color: T.textPrimary,
         }}>
-          🥋 Jiu Jitsu Tap List
+          🔗 JJ Game Plan
         </h1>
 
         {/* ── Pill Tab Bar ── */}
@@ -372,7 +372,7 @@ export default function Home() {
           borderRadius: "10px",
           border: `1px solid ${T.borderSubtle}`,
         }}>
-          {(["taplist", "flow", "gameplan"] as const).map((tab) => {
+          {(["gameplan", "flow", "taplist"] as const).map((tab) => {
             const labels = { taplist: "🥋 Tap List", flow: "🗺️ Flow", gameplan: "🔗 Game Plan" };
             const isActive = activeTab === tab;
             return (

@@ -135,8 +135,8 @@ export default function Home() {
     }
     const text =
       totalCollected === 0
-        ? "I'm just getting started on The Tap List. 🥋"
-        : `I've tapped ${totalCollected} unique submissions on The Tap List. My most caught: ${topMove}. 🥋`;
+        ? "I'm just getting started on Jiu Jitsu Tap List. 🥋"
+        : `I've tapped ${totalCollected} unique submissions on Jiu Jitsu Tap List. My most caught: ${topMove}. 🥋`;
 
     setShareMsg(text);
     if (navigator.clipboard) {
@@ -183,7 +183,7 @@ export default function Home() {
             color: "#fff",
           }}
         >
-          🥋 The Tap List
+          🥋 Jiu Jitsu Tap List
         </h1>
 
         {/* Stats bar */}

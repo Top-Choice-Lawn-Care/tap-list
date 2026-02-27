@@ -27,11 +27,14 @@ type PositionKey =
   | 'side-control'
   | 'mount'
   | 'back-taken'
-  | 'standing';
+  | 'standing'
+  | 'mount-top'
+  | 'side-control-top'
+  | 'back-mount-top';
 
 // ─── Starting Positions Array (for default grid view) ────────────────────────
 
-const STARTING_POSITIONS: { id: PositionKey; emoji: string; label: string }[] = [
+const DEFENDING_POSITIONS: { id: PositionKey; emoji: string; label: string }[] = [
   { id: 'closed-guard', emoji: '🥋', label: 'Closed Guard' },
   { id: 'half-guard',   emoji: '½',  label: 'Half Guard'   },
   { id: 'side-control', emoji: '😬', label: 'Side Control' },
@@ -39,6 +42,14 @@ const STARTING_POSITIONS: { id: PositionKey; emoji: string; label: string }[] = 
   { id: 'back-taken',   emoji: '😱', label: 'Back Taken'   },
   { id: 'standing',     emoji: '🤼', label: 'Standing'     },
 ];
+
+const ATTACKING_POSITIONS: { id: PositionKey; emoji: string; label: string }[] = [
+  { id: 'mount-top',        emoji: '💪', label: 'Mount (top)'        },
+  { id: 'side-control-top', emoji: '🤛', label: 'Side Control (top)' },
+  { id: 'back-mount-top',   emoji: '🎯', label: 'Back Mount (top)'   },
+];
+
+const STARTING_POSITIONS = [...DEFENDING_POSITIONS, ...ATTACKING_POSITIONS];
 
 // ─── Custom Node Components ───────────────────────────────────────────────────
 
@@ -421,17 +432,97 @@ const SUBGRAPHS: Record<PositionKey, Subgraph> = {
       ed('e15', 'st-sc',   'st-2-darce', true),
     ],
   },
+
+  // ── MOUNT (top) ───────────────────────────────────────────────────────────────
+  'mount-top': {
+    nodes: [
+      nd('root',        'selected',     COL0, 167, { emoji: '💪', label: 'Mount (top)' }),
+      nd('mt-arm',      'submission',   COL1, 0,   { label: 'Armbar' }),
+      nd('mt-ame',      'submission',   COL1, 90,  { label: 'Americana' }),
+      nd('mt-ezek',     'submission',   COL1, 180, { label: 'Ezekiel Choke' }),
+      nd('mt-smount',   'intermediate', COL1, 270, { label: 'S-Mount' }),
+      nd('mt-backmnt',  'intermediate', COL1, 360, { label: 'Back Mount (top)' }),
+      nd('mt-2-arm',    'submission',   COL2, 270, { label: 'Armbar' }),
+      nd('mt-2-rnc',    'submission',   COL2, 360, { label: 'Rear Naked Choke' }),
+      nd('mt-2-bow',    'submission',   COL2, 450, { label: 'Bow & Arrow' }),
+    ],
+    edges: [
+      ed('e1', 'root',       'mt-arm',    true),
+      ed('e2', 'root',       'mt-ame',    true),
+      ed('e3', 'root',       'mt-ezek',   true),
+      ed('e4', 'root',       'mt-smount', false, 's-mount'),
+      ed('e5', 'root',       'mt-backmnt',false, 'take back'),
+      ed('e6', 'mt-smount',  'mt-2-arm',  true),
+      ed('e7', 'mt-backmnt', 'mt-2-rnc',  true),
+      ed('e8', 'mt-backmnt', 'mt-2-bow',  true),
+    ],
+  },
+
+  // ── SIDE CONTROL (top) ────────────────────────────────────────────────────────
+  'side-control-top': {
+    nodes: [
+      nd('root',         'selected',     COL0, 302, { emoji: '🤛', label: 'Side Control (top)' }),
+      nd('sc-ame',       'submission',   COL1, 0,   { label: 'Americana' }),
+      nd('sc-kim',       'submission',   COL1, 90,  { label: 'Kimura' }),
+      nd('sc-darce',     'submission',   COL1, 180, { label: "D'Arce Choke" }),
+      nd('sc-nsc',       'submission',   COL1, 270, { label: 'North-South Choke' }),
+      nd('sc-mount',     'intermediate', COL1, 360, { label: 'Mount (top)' }),
+      nd('sc-backmnt',   'intermediate', COL1, 450, { label: 'Back Mount (top)' }),
+      nd('sc-2-arm',     'submission',   COL2, 360, { label: 'Armbar' }),
+      nd('sc-2-ame',     'submission',   COL2, 450, { label: 'Americana' }),
+      nd('sc-2-rnc',     'submission',   COL2, 540, { label: 'Rear Naked Choke' }),
+      nd('sc-2-bow',     'submission',   COL2, 630, { label: 'Bow & Arrow' }),
+    ],
+    edges: [
+      ed('e1',  'root',       'sc-ame',    true),
+      ed('e2',  'root',       'sc-kim',    true),
+      ed('e3',  'root',       'sc-darce',  true),
+      ed('e4',  'root',       'sc-nsc',    true),
+      ed('e5',  'root',       'sc-mount',  false, 'advance'),
+      ed('e6',  'root',       'sc-backmnt',false, 'take back'),
+      ed('e7',  'sc-mount',   'sc-2-arm',  true),
+      ed('e8',  'sc-mount',   'sc-2-ame',  true),
+      ed('e9',  'sc-backmnt', 'sc-2-rnc',  true),
+      ed('e10', 'sc-backmnt', 'sc-2-bow',  true),
+    ],
+  },
+
+  // ── BACK MOUNT (top) ──────────────────────────────────────────────────────────
+  'back-mount-top': {
+    nodes: [
+      nd('root',        'selected',     COL0, 212, { emoji: '🎯', label: 'Back Mount (top)' }),
+      nd('bm-rnc',      'submission',   COL1, 0,   { label: 'Rear Naked Choke' }),
+      nd('bm-bow',      'submission',   COL1, 90,  { label: 'Bow & Arrow' }),
+      nd('bm-arm',      'submission',   COL1, 180, { label: 'Armbar' }),
+      nd('bm-collar',   'submission',   COL1, 270, { label: 'Collar Choke' }),
+      nd('bm-mount',    'intermediate', COL1, 360, { label: 'Mount (top)' }),
+      nd('bm-2-arm',    'submission',   COL2, 360, { label: 'Armbar' }),
+      nd('bm-2-ame',    'submission',   COL2, 450, { label: 'Americana' }),
+    ],
+    edges: [
+      ed('e1', 'root',     'bm-rnc',   true),
+      ed('e2', 'root',     'bm-bow',   true),
+      ed('e3', 'root',     'bm-arm',   true),
+      ed('e4', 'root',     'bm-collar',true),
+      ed('e5', 'root',     'bm-mount', false, 'they escape'),
+      ed('e6', 'bm-mount', 'bm-2-arm', true),
+      ed('e7', 'bm-mount', 'bm-2-ame', true),
+    ],
+  },
 };
 
 // ─── Position labels for header ───────────────────────────────────────────────
 
 const POSITION_LABEL: Record<PositionKey, { emoji: string; label: string }> = {
-  'closed-guard': { emoji: '🥋', label: 'Closed Guard' },
-  'half-guard':   { emoji: '½', label: 'Half Guard'   },
-  'side-control': { emoji: '😬', label: 'Side Control' },
-  'mount':        { emoji: '😰', label: 'Mount'        },
-  'back-taken':   { emoji: '😱', label: 'Back Taken'   },
-  'standing':     { emoji: '🤼', label: 'Standing'     },
+  'closed-guard':     { emoji: '🥋', label: 'Closed Guard'        },
+  'half-guard':       { emoji: '½',  label: 'Half Guard'          },
+  'side-control':     { emoji: '😬', label: 'Side Control'        },
+  'mount':            { emoji: '😰', label: 'Mount'               },
+  'back-taken':       { emoji: '😱', label: 'Back Taken'          },
+  'standing':         { emoji: '🤼', label: 'Standing'            },
+  'mount-top':        { emoji: '💪', label: 'Mount (top)'         },
+  'side-control-top': { emoji: '🤛', label: 'Side Control (top)'  },
+  'back-mount-top':   { emoji: '🎯', label: 'Back Mount (top)'    },
 };
 
 // ─── Default View: Plain CSS Grid ────────────────────────────────────────────
@@ -457,50 +548,125 @@ function DefaultView({ onSelect }: { onSelect: (pos: PositionKey) => void }) {
         </div>
       </div>
 
-      {/* 2-column grid of position cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '12px',
-          flex: 1,
-          alignContent: 'start',
-        }}
-      >
-        {STARTING_POSITIONS.map((pos) => (
-          <button
-            key={pos.id}
-            onClick={() => onSelect(pos.id)}
-            style={{
-              backgroundColor: '#13131a',
-              border: '1.5px solid #2a2a3a',
-              borderRadius: '14px',
-              padding: '20px 16px',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '10px',
-              fontFamily: 'inherit',
-              transition: 'all 0.15s ease',
-              WebkitTapHighlightColor: 'transparent',
-              minHeight: '100px',
-            }}
-          >
-            <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
-            <span
+      {/* DEFENDING section */}
+      <div style={{ marginBottom: '4px' }}>
+        <div
+          style={{
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const,
+            color: '#6b7280',
+            marginBottom: '10px',
+            paddingLeft: '2px',
+          }}
+        >
+          Defending 🛡️
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+          }}
+        >
+          {DEFENDING_POSITIONS.map((pos) => (
+            <button
+              key={pos.id}
+              onClick={() => onSelect(pos.id)}
               style={{
-                fontSize: '14px',
-                fontWeight: 700,
-                color: '#e8e8ea',
-                textAlign: 'center',
-                lineHeight: 1.3,
+                backgroundColor: '#13131a',
+                border: '1.5px solid #2a2a3a',
+                borderRadius: '14px',
+                padding: '20px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s ease',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '100px',
               }}
             >
-              {pos.label}
-            </span>
-          </button>
-        ))}
+              <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#e8e8ea',
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                }}
+              >
+                {pos.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: '1px', backgroundColor: '#1e1e2e', margin: '16px 0 12px' }} />
+
+      {/* ATTACKING section */}
+      <div>
+        <div
+          style={{
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const,
+            color: '#6b7280',
+            marginBottom: '10px',
+            paddingLeft: '2px',
+          }}
+        >
+          Attacking ⚔️
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px',
+          }}
+        >
+          {ATTACKING_POSITIONS.map((pos) => (
+            <button
+              key={pos.id}
+              onClick={() => onSelect(pos.id)}
+              style={{
+                backgroundColor: '#0d1f12',
+                border: '1.5px solid #1a3a22',
+                borderRadius: '14px',
+                padding: '20px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+                fontFamily: 'inherit',
+                transition: 'all 0.15s ease',
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '100px',
+              }}
+            >
+              <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#e8e8ea',
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                }}
+              >
+                {pos.label}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

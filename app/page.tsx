@@ -1,6 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#4b5563", fontSize: "14px" }}>
+      Loading game plan…
+    </div>
+  ),
+});
 
 // ─── Tap List Types & Data ───────────────────────────────────────────────────
 
@@ -216,7 +226,7 @@ const FLOW_POSITIONS: FlowPosition[] = [
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"taplist" | "flow">("taplist");
+  const [activeTab, setActiveTab] = useState<"taplist" | "flow" | "gameplan">("taplist");
 
   // Tap List state
   const [tapData, setTapData] = useState<TapData>({});
@@ -379,6 +389,24 @@ export default function Home() {
             }}
           >
             🗺️ Flow
+          </button>
+          <button
+            onClick={() => setActiveTab("gameplan")}
+            style={{
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: 700,
+              fontFamily: "inherit",
+              cursor: "pointer",
+              border: "none",
+              borderRadius: "6px 6px 0 0",
+              backgroundColor: activeTab === "gameplan" ? "#1a1a1a" : "transparent",
+              color: activeTab === "gameplan" ? "#fff" : "#6b7280",
+              borderBottom: activeTab === "gameplan" ? "2px solid #7c3aed" : "2px solid transparent",
+              transition: "all 0.15s ease",
+            }}
+          >
+            🔗 Game Plan
           </button>
         </div>
       </div>
@@ -728,6 +756,31 @@ export default function Home() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════
+          GAME PLAN TAB
+      ══════════════════════════════════════════ */}
+      {activeTab === "gameplan" && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#0a0a0a",
+          }}
+        >
+          {/* Sticky header replica for positioning */}
+          <div style={{ flexShrink: 0, height: "93px" }} />
+          {/* Full-height flow canvas */}
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <GamePlanFlow />
+          </div>
         </div>
       )}
 

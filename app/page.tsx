@@ -16,14 +16,16 @@ const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
 
 type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
-type Difficulty = "white" | "blue" | "purple";
+type Difficulty = "white" | "blue" | "purple" | "brown" | "black";
 type Submission = { name: string; category: string; difficulty: Difficulty; };
 type Tab = "taplist" | "gameplan" | "timer";
 
 const DIFFICULTY_DOT: Record<Difficulty, { color: string; label: string }> = {
-  white:  { color: "#e5e7eb", label: "Common"   },
+  white:  { color: "#e5e7eb", label: "Common"      },
   blue:   { color: "#3b82f6", label: "Intermediate" },
-  purple: { color: "#a855f7", label: "Advanced"  },
+  purple: { color: "#a855f7", label: "Advanced"     },
+  brown:  { color: "#d97706", label: "Expert"       },
+  black:  { color: "#9ca3af", label: "Elite"        },
 };
 
 // ─── Submissions ──────────────────────────────────────────────────────────────
@@ -59,6 +61,22 @@ const SUBMISSIONS: Submission[] = [
   { name: "Twister",               category: "Specialty", difficulty: "purple" },
   { name: "Buggy Choke",           category: "Specialty", difficulty: "purple" },
   { name: "Banana Split",          category: "Specialty", difficulty: "purple" },
+  // ── Added: white → black range ────────────────────────────────────────────
+  { name: "Von Flue Choke",        category: "Chokes",    difficulty: "white"  },
+  { name: "Gift Wrap",             category: "Specialty", difficulty: "white"  },
+  { name: "Baseball Bat Choke",    category: "Chokes",    difficulty: "blue"   },
+  { name: "Paper Cutter Choke",    category: "Chokes",    difficulty: "blue"   },
+  { name: "Mounted Triangle",      category: "Chokes",    difficulty: "blue"   },
+  { name: "Japanese Necktie",      category: "Chokes",    difficulty: "purple" },
+  { name: "Tarikoplata",           category: "Arm Locks", difficulty: "purple" },
+  { name: "Electric Chair",        category: "Leg Locks", difficulty: "purple" },
+  { name: "Suloev Stretch",        category: "Leg Locks", difficulty: "brown"  },
+  { name: "Belly Down Armbar",     category: "Arm Locks", difficulty: "brown"  },
+  { name: "Estima Lock",           category: "Leg Locks", difficulty: "brown"  },
+  { name: "Flying Armbar",         category: "Arm Locks", difficulty: "brown"  },
+  { name: "Worm Guard Choke",      category: "Chokes",    difficulty: "black"  },
+  { name: "Truck Roll",            category: "Specialty", difficulty: "black"  },
+  { name: "Marceloplata",          category: "Arm Locks", difficulty: "black"  },
 ];
 const CATEGORIES = ["Chokes", "Arm Locks", "Leg Locks", "Specialty"];
 const STORAGE_KEY = "tap-list-data";
@@ -68,11 +86,11 @@ const STREAK_KEY = "jj-streak-data";
 
 type Belt = { name: string; emoji: string; min: number; max: number; color: string; bg: string; glow: string; };
 const BELTS: Belt[] = [
-  { name: "White",  emoji: "🤍", min: 0,  max: 5,  color: "#e5e7eb", bg: "rgba(229,231,235,0.08)", glow: "rgba(229,231,235,0.25)" },
-  { name: "Blue",   emoji: "💙", min: 6,  max: 12, color: "#3b82f6", bg: "rgba(59,130,246,0.10)",  glow: "rgba(59,130,246,0.30)" },
-  { name: "Purple", emoji: "💜", min: 13, max: 20, color: "#a855f7", bg: "rgba(168,85,247,0.10)",  glow: "rgba(168,85,247,0.30)" },
-  { name: "Brown",  emoji: "🤎", min: 21, max: 27, color: "#d97706", bg: "rgba(217,119,6,0.10)",   glow: "rgba(217,119,6,0.30)"  },
-  { name: "Black",  emoji: "🖤", min: 28, max: 29, color: "#9ca3af", bg: "rgba(156,163,175,0.10)", glow: "rgba(156,163,175,0.30)" },
+  { name: "White",  emoji: "🤍", min: 0,  max: 8,  color: "#e5e7eb", bg: "rgba(229,231,235,0.08)", glow: "rgba(229,231,235,0.25)" },
+  { name: "Blue",   emoji: "💙", min: 9,  max: 18, color: "#3b82f6", bg: "rgba(59,130,246,0.10)",  glow: "rgba(59,130,246,0.30)" },
+  { name: "Purple", emoji: "💜", min: 19, max: 29, color: "#a855f7", bg: "rgba(168,85,247,0.10)",  glow: "rgba(168,85,247,0.30)" },
+  { name: "Brown",  emoji: "🤎", min: 30, max: 40, color: "#d97706", bg: "rgba(217,119,6,0.10)",   glow: "rgba(217,119,6,0.30)"  },
+  { name: "Black",  emoji: "🖤", min: 41, max: 44, color: "#9ca3af", bg: "rgba(156,163,175,0.10)", glow: "rgba(156,163,175,0.30)" },
 ];
 
 function getBelt(count: number): Belt {
@@ -342,6 +360,26 @@ const VIDEO_IDS: Record<string, string> = {
   "Twister": "V3nDmb66Xpc",                     // Stephan Kesting - The Easiest Way to do the Twister
   "Buggy Choke": "0VDUwuyT6N4",                 // Fix Your Buggy Choke - How To Buggy Choke in BJJ
   "Banana Split": "_TPwJM8JCD4",                 // Andre Galvao via BJJ Fanatics - Banana Split Submission
+  // ── White additions ────────────────────────────────────────────────────────
+  "Von Flue Choke": "wIAVYLB8oXE",              // Batuhan Asig via BJJ Fanatics - Von Flue Choke
+  "Gift Wrap": "s8KU1LFVW2Y",                    // Chewjitsu - Gift Wrap Submission Options
+  // ── Blue additions ─────────────────────────────────────────────────────────
+  "Baseball Bat Choke": "s14Iiq41uAc",           // Daniele Bolelli via BJJ Fanatics - BRUTAL Baseball Bat Choke
+  "Paper Cutter Choke": "yfPKpzxn2yY",           // Chewjitsu - Paper Cutter Choke (Arms Race series)
+  "Mounted Triangle": "s4OLLnXBgKw",             // Khabib Nurmagomedov via BJJ Fanatics - Mounted Triangle
+  // ── Purple additions ───────────────────────────────────────────────────────
+  "Japanese Necktie": "JuQKlZfhpHA",             // Stephan Kesting - The Japanese Necktie
+  "Tarikoplata": "9yyauPoZmGI",                  // Tarik Hopstock via BJJ Fanatics - Understanding The Tarikoplata
+  "Electric Chair": "GXg9wtpMlUw",               // BJJ for Breakfast - Lockdown to Electric Chair
+  // ── Brown additions ────────────────────────────────────────────────────────
+  "Suloev Stretch": "kwS4-kslujQ",               // The Suloev Stretch Submission For BJJ & MMA
+  "Belly Down Armbar": "cpW9dsFxQco",             // Joel Bouhey via BJJ Fanatics - Belly Down Armbar
+  "Estima Lock": "dwoUiTFBEaM",                  // Braulio Estima - How To Do The Estima Lock
+  "Flying Armbar": "5fLMn0OkLgs",                // Flying Armbar tutorial (not just a sports clip)
+  // ── Black additions ────────────────────────────────────────────────────────
+  "Worm Guard Choke": "gEWO8PxSXuU",             // BJJ Scout - Keenan Cornelius Worm Guard Study
+  "Truck Roll": "rE94hsb74FI",                    // Eddie Bravo 10th Planet - Truck to Twister Submission
+  "Marceloplata": "tfvEGtSCIRI",                  // Stephan Kesting - Omoplata vs Marceloplata vs Baratoplata
 };
 
 function VideoModal({ query, onClose }: { query: string | null; onClose: () => void }) {

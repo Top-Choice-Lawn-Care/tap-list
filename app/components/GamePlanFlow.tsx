@@ -807,49 +807,45 @@ function SubgraphView({
 }) {
   const { fitView } = useReactFlow();
   const { nodes, edges } = computeSubgraph(positionId, positionGraph);
-  const prevPositionId = useRef<string | null>(null);
+  // Initialize to current positionId so the first render doesn't override onInit
+  const prevPositionId = useRef<string | null>(positionId);
 
+  // Smart zoom helper — fits to center node + L1 direct children only
+  // L2+ nodes trail off the edges, hinting there's more to explore
+  const fitToL1 = useCallback(() => {
+    const l1Nodes = nodes.filter(n => n.id === 'center' || n.id.startsWith('l1-'));
+    fitView({
+      nodes: l1Nodes,
+      padding: 0.18,
+      duration: 350,
+      minZoom: 0.5,
+      maxZoom: 1.4,
+    });
+  }, [nodes, fitView]);
+
+  // On position navigation (subsequent changes only — first render handled by onInit)
   useEffect(() => {
     if (prevPositionId.current !== positionId) {
       prevPositionId.current = positionId;
-      const t = setTimeout(() => {
-        fitView({ padding: 0.12, duration: 400 });
-      }, 60);
+      const t = setTimeout(fitToL1, 80);
       return () => clearTimeout(t);
     }
-  }, [positionId, fitView]);
+  }, [positionId, fitToL1]);
 
+  // onInit — runs once on mount, sets the initial smart zoom
   const onInit = useCallback((rfInstance: ReactFlowInstance) => {
-    const allNodes = rfInstance.getNodes();
-    const allEdges = rfInstance.getEdges();
-
-    // Find root node (first node is the center/current position)
-    const rootNodeId = allNodes[0]?.id;
-    if (!rootNodeId) return;
-
-    // Get direct children (1 hop from root)
-    const level1Ids = new Set<string>([rootNodeId]);
-    allEdges.forEach((e) => {
-      if (e.source === rootNodeId) level1Ids.add(e.target);
-    });
-
-    // Get level 2 children
-    const level2Ids = new Set<string>(level1Ids);
-    allEdges.forEach((e) => {
-      if (level1Ids.has(e.source)) level2Ids.add(e.target);
-    });
-
-    const focusNodes = allNodes.filter((n) => level2Ids.has(n.id));
-
+    const l1Nodes = rfInstance.getNodes().filter(
+      n => n.id === 'center' || n.id.startsWith('l1-')
+    );
     setTimeout(() => {
       rfInstance.fitView({
-        nodes: focusNodes,
-        padding: 0.2,
-        duration: 300,
+        nodes: l1Nodes,
+        padding: 0.18,
+        duration: 350,
         minZoom: 0.5,
-        maxZoom: 1.2,
+        maxZoom: 1.4,
       });
-    }, 50);
+    }, 60);
   }, []);
 
   const onNodeClick: NodeMouseHandler = useCallback(

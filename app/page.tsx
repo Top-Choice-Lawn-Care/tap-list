@@ -340,7 +340,7 @@ const VIDEO_IDS: Record<string, string> = {
 function VideoModal({ query, onClose }: { query: string | null; onClose: () => void }) {
   if (!query) return null;
   const videoId = VIDEO_IDS[query] ?? null;
-  const embedUrl = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0` : null;
+  const embedUrl = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1` : null;
   const fallbackUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent("bjj " + query + " tutorial")}`;
 
   return (
@@ -400,7 +400,7 @@ function VideoModal({ query, onClose }: { query: string | null; onClose: () => v
                 position: "absolute", top: 0, left: 0,
                 width: "100%", height: "100%", border: "none",
               }}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               title={`BJJ ${query} tutorial`}
             />
@@ -1062,12 +1062,7 @@ export default function Home() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                e.preventDefault();
-                                const vid = VIDEO_IDS[sub.name];
-                                const url = vid
-                                  ? `https://www.youtube.com/watch?v=${vid}`
-                                  : `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(sub.name)}+tutorial`;
-                                window.open(url, "_blank");
+                                openVideo(sub.name);
                               }}
                               style={{
                                 background: "none", border: "none", padding: "4px",

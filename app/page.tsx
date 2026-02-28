@@ -36,6 +36,7 @@ const SUBMISSIONS: Submission[] = [
   { name: "Triangle Choke", category: "Chokes" },
   { name: "D'Arce Choke", category: "Chokes" },
   { name: "Anaconda Choke", category: "Chokes" },
+  { name: "Head and Arm Triangle", category: "Chokes" },
   { name: "North-South Choke", category: "Chokes" },
   { name: "Bow and Arrow Choke", category: "Chokes" },
   { name: "Ezekiel Choke", category: "Chokes" },
@@ -806,7 +807,7 @@ export default function Home() {
           backgroundColor: T.bg,
         }}>
           <div style={{ flexShrink: 0, height: "93px" }} />
-          <div style={{ flex: 1, overflow: "hidden" }}>
+          <div style={{ flex: 1, overflow: "auto" }}>
             <GamePlanFlow />
           </div>
         </div>

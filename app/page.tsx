@@ -801,6 +801,10 @@ export default function Home() {
   const prevBeltRef = useRef<Belt | null>(null);
   const [beltUnlock, setBeltUnlock] = useState<Belt | null>(null);
 
+  // Sticky header height measurement (for gameplan spacer)
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(120);
+
   // Streak
   const [streak, setStreak] = useState(0);
 
@@ -836,6 +840,17 @@ export default function Home() {
     }
     prevBeltRef.current = newBelt;
   }, [totalCollected, hydrated]);
+  // Measure sticky header height dynamically
+  useEffect(() => {
+    const el = stickyHeaderRef.current;
+    if (!el) return;
+    const measure = () => setHeaderHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const totalTaps = Object.values(tapData).reduce((sum, e) => sum + e.length, 0);
   const progressPct = Math.round((totalCollected / SUBMISSIONS.length) * 100);
   const currentBelt = getBelt(totalCollected);
@@ -886,7 +901,7 @@ export default function Home() {
     }}>
 
       {/* ── Sticky Header ─────────────────────────────────────────────── */}
-      <div style={{
+      <div ref={stickyHeaderRef} style={{
         padding: "20px 16px 12px",
         borderBottom: `1px solid ${T.borderSubtle}`,
         position: "sticky", top: 0,
@@ -1235,7 +1250,7 @@ export default function Home() {
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           display: "flex", flexDirection: "column", backgroundColor: T.bg,
         }}>
-          <div style={{ flexShrink: 0, height: "93px" }} />
+          <div style={{ flexShrink: 0, height: `${headerHeight}px` }} />
           <div style={{ flex: 1, overflow: "hidden" }}>
             <GamePlanFlow openVideo={openVideo} />
           </div>

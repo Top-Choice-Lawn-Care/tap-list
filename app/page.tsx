@@ -307,8 +307,9 @@ function ProfessorMax({ visible, onDismiss }: { visible: boolean; onDismiss: () 
               <polygon points="36,48 20,44 24,44" fill="#6b7280"/>
               {/* Right lapel */}
               <polygon points="36,48 52,44 48,44" fill="#6b7280"/>
-              {/* Belt */}
-              <rect x="20" y="58" width="32" height="5" rx="2" fill="#dc2626"/>
+              {/* Belt — black belt */}
+              <rect x="20" y="58" width="32" height="5" rx="2" fill="#0a0a0a"/>
+              <rect x="20" y="59" width="32" height="1" rx="0" fill="#2a2a2a"/>
             </g>
             
             {/* Neck */}

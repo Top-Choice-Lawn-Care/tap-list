@@ -967,10 +967,7 @@ export default function GamePlanFlow({ openVideo }: { openVideo?: (query: string
         </>
       )}
 
-      {/* Professor Toast */}
-      {activeQuote && (
-        <ProfessorToast quote={activeQuote} onDismiss={dismissQuote} />
-      )}
+      {/* Professor Toast removed — quotes only via ProfessorMax bubble in page.tsx */}
     </div>
   );
 }

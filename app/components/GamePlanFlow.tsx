@@ -910,44 +910,41 @@ export default function GamePlanFlow({ openVideo }: { openVideo?: (query: string
               flexShrink: 0,
               backgroundColor: '#09090d',
               borderBottom: '1px solid #1a1a26',
-              padding: '12px 16px',
+              padding: '10px 16px',
               zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
             }}
           >
-            {/* Row 1: Back + breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <button
-                onClick={handleBack}
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  color: '#e8e8ea',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: '8px',
-                  padding: '6px 12px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  flexShrink: 0,
-                }}
-              >
-                ← Back
-              </button>
-              {buildBreadcrumb() && (
-                <div style={{ fontSize: '12px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {buildBreadcrumb()}
-                </div>
-              )}
-            </div>
-            {/* Row 2: Position title */}
+            <button
+              onClick={handleBack}
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                color: '#e8e8ea',
+                border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                flexShrink: 0,
+              }}
+            >
+              ← Back
+            </button>
             {currentPosition && (
-              <div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#e8e8ea', letterSpacing: '-0.3px' }}>
-                  {currentPosition.emoji} {currentPosition.label}
-                </div>
-                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px', fontStyle: 'italic' }}>
-                  — position before submission —
-                </div>
+              <div style={{
+                fontSize: '17px',
+                fontWeight: 800,
+                color: '#e8e8ea',
+                letterSpacing: '-0.3px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {currentPosition.emoji} {currentPosition.label}
               </div>
             )}
           </div>

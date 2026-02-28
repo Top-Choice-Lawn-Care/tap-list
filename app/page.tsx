@@ -16,42 +16,49 @@ const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
 
 type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
-type Submission = { name: string; category: string; };
+type Difficulty = "white" | "blue" | "purple";
+type Submission = { name: string; category: string; difficulty: Difficulty; };
 type Tab = "taplist" | "gameplan" | "timer";
+
+const DIFFICULTY_DOT: Record<Difficulty, { color: string; label: string }> = {
+  white:  { color: "#e5e7eb", label: "Common"   },
+  blue:   { color: "#3b82f6", label: "Intermediate" },
+  purple: { color: "#a855f7", label: "Advanced"  },
+};
 
 // ─── Submissions ──────────────────────────────────────────────────────────────
 
 const SUBMISSIONS: Submission[] = [
-  { name: "Rear Naked Choke", category: "Chokes" },
-  { name: "Guillotine (High Elbow)", category: "Chokes" },
-  { name: "Arm-In Guillotine", category: "Chokes" },
-  { name: "Triangle Choke", category: "Chokes" },
-  { name: "D'Arce Choke", category: "Chokes" },
-  { name: "Anaconda Choke", category: "Chokes" },
-  { name: "Head and Arm Triangle", category: "Chokes" },
-  { name: "North-South Choke", category: "Chokes" },
-  { name: "Bow and Arrow Choke", category: "Chokes" },
-  { name: "Ezekiel Choke", category: "Chokes" },
-  { name: "Loop Choke", category: "Chokes" },
-  { name: "Clock Choke", category: "Chokes" },
-  { name: "Cross Collar Choke", category: "Chokes" },
-  { name: "Armbar", category: "Arm Locks" },
-  { name: "Kimura", category: "Arm Locks" },
-  { name: "Americana", category: "Arm Locks" },
-  { name: "Omoplata", category: "Arm Locks" },
-  { name: "Wristlock", category: "Arm Locks" },
-  { name: "Baratoplata", category: "Arm Locks" },
-  { name: "Straight Ankle Lock", category: "Leg Locks" },
-  { name: "Inside Heel Hook", category: "Leg Locks" },
-  { name: "Outside Heel Hook", category: "Leg Locks" },
-  { name: "Kneebar", category: "Leg Locks" },
-  { name: "Calf Slicer", category: "Leg Locks" },
-  { name: "Toe Hold", category: "Leg Locks" },
-  { name: "Gogoplata", category: "Specialty" },
-  { name: "Peruvian Necktie", category: "Specialty" },
-  { name: "Twister", category: "Specialty" },
-  { name: "Buggy Choke", category: "Specialty" },
-  { name: "Banana Split", category: "Specialty" },
+  { name: "Rear Naked Choke",      category: "Chokes",    difficulty: "white"  },
+  { name: "Guillotine (High Elbow)", category: "Chokes",  difficulty: "white"  },
+  { name: "Arm-In Guillotine",     category: "Chokes",    difficulty: "blue"   },
+  { name: "Triangle Choke",        category: "Chokes",    difficulty: "white"  },
+  { name: "D'Arce Choke",          category: "Chokes",    difficulty: "blue"   },
+  { name: "Anaconda Choke",        category: "Chokes",    difficulty: "blue"   },
+  { name: "Head and Arm Triangle", category: "Chokes",    difficulty: "blue"   },
+  { name: "North-South Choke",     category: "Chokes",    difficulty: "blue"   },
+  { name: "Bow and Arrow Choke",   category: "Chokes",    difficulty: "blue"   },
+  { name: "Ezekiel Choke",         category: "Chokes",    difficulty: "blue"   },
+  { name: "Loop Choke",            category: "Chokes",    difficulty: "purple" },
+  { name: "Clock Choke",           category: "Chokes",    difficulty: "blue"   },
+  { name: "Cross Collar Choke",    category: "Chokes",    difficulty: "white"  },
+  { name: "Armbar",                category: "Arm Locks", difficulty: "white"  },
+  { name: "Kimura",                category: "Arm Locks", difficulty: "white"  },
+  { name: "Americana",             category: "Arm Locks", difficulty: "white"  },
+  { name: "Omoplata",              category: "Arm Locks", difficulty: "blue"   },
+  { name: "Wristlock",             category: "Arm Locks", difficulty: "blue"   },
+  { name: "Baratoplata",           category: "Arm Locks", difficulty: "purple" },
+  { name: "Straight Ankle Lock",   category: "Leg Locks", difficulty: "white"  },
+  { name: "Inside Heel Hook",      category: "Leg Locks", difficulty: "purple" },
+  { name: "Outside Heel Hook",     category: "Leg Locks", difficulty: "purple" },
+  { name: "Kneebar",               category: "Leg Locks", difficulty: "blue"   },
+  { name: "Calf Slicer",           category: "Leg Locks", difficulty: "blue"   },
+  { name: "Toe Hold",              category: "Leg Locks", difficulty: "blue"   },
+  { name: "Gogoplata",             category: "Specialty", difficulty: "purple" },
+  { name: "Peruvian Necktie",      category: "Specialty", difficulty: "purple" },
+  { name: "Twister",               category: "Specialty", difficulty: "purple" },
+  { name: "Buggy Choke",           category: "Specialty", difficulty: "purple" },
+  { name: "Banana Split",          category: "Specialty", difficulty: "purple" },
 ];
 const CATEGORIES = ["Chokes", "Arm Locks", "Leg Locks", "Specialty"];
 const STORAGE_KEY = "tap-list-data";
@@ -1058,7 +1065,13 @@ export default function Home() {
                           }}>
                             {sub.name}
                           </div>
-                          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                            <div title={DIFFICULTY_DOT[sub.difficulty].label} style={{
+                              width: 8, height: 8, borderRadius: "50%",
+                              backgroundColor: DIFFICULTY_DOT[sub.difficulty].color,
+                              boxShadow: `0 0 5px ${DIFFICULTY_DOT[sub.difficulty].color}99`,
+                              flexShrink: 0,
+                            }} />
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

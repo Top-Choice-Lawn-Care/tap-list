@@ -297,70 +297,146 @@ function ProfessorMax({ visible, onDismiss }: { visible: boolean; onDismiss: () 
           flexShrink: 0,
         }}>
           <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="skinG" cx="42%" cy="35%" r="58%">
+                <stop offset="0%" stopColor="#d4956a"/>
+                <stop offset="60%" stopColor="#bf7d50"/>
+                <stop offset="100%" stopColor="#a86840"/>
+              </radialGradient>
+              <radialGradient id="bgG" cx="50%" cy="30%" r="70%">
+                <stop offset="0%" stopColor="#1c1c2e"/>
+                <stop offset="100%" stopColor="#09090d"/>
+              </radialGradient>
+              <radialGradient id="hairG" cx="50%" cy="20%" r="60%">
+                <stop offset="0%" stopColor="#2a1f10"/>
+                <stop offset="100%" stopColor="#0d0a06"/>
+              </radialGradient>
+              <linearGradient id="giG" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#d8d8e6"/>
+                <stop offset="50%" stopColor="#eeeef8"/>
+                <stop offset="100%" stopColor="#d0d0e0"/>
+              </linearGradient>
+              <linearGradient id="beltG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#1a1a1a"/>
+                <stop offset="50%" stopColor="#2e2e2e"/>
+                <stop offset="100%" stopColor="#111111"/>
+              </linearGradient>
+            </defs>
+
             {/* Background */}
-            <rect width="72" height="72" fill="#0f0f1a"/>
-            
-            {/* Gi body — white */}
+            <rect width="72" height="72" fill="url(#bgG)"/>
+
+            {/* Gi body */}
             <g className="prof-body">
-              <polygon points="20,44 52,44 50,72 22,72" fill="#d4d4e0"/>
-              {/* Left lapel */}
-              <polygon points="36,48 20,44 24,44" fill="#6b7280"/>
-              {/* Right lapel */}
-              <polygon points="36,48 52,44 48,44" fill="#6b7280"/>
-              {/* Belt — black belt */}
-              <rect x="20" y="58" width="32" height="5" rx="2" fill="#0a0a0a"/>
-              <rect x="20" y="59" width="32" height="1" rx="0" fill="#2a2a2a"/>
+              {/* Main torso */}
+              <polygon points="16,46 56,46 54,72 18,72" fill="url(#giG)"/>
+              {/* Left gi panel (slightly darker) */}
+              <polygon points="16,46 36,52 36,72 18,72" fill="#d0d0df"/>
+              {/* Right gi panel */}
+              <polygon points="56,46 36,52 36,72 54,72" fill="#e4e4f0"/>
+              {/* Left lapel dark */}
+              <polygon points="36,52 16,46 21,46 28,56" fill="#3a3a4a"/>
+              {/* Right lapel dark */}
+              <polygon points="36,52 56,46 51,46 44,56" fill="#2e2e3e"/>
+              {/* Lapel center seam */}
+              <line x1="36" y1="52" x2="36" y2="72" stroke="#c8c8d8" strokeWidth="0.7"/>
+              {/* Black belt */}
+              <rect x="18" y="60" width="36" height="7" rx="1.5" fill="url(#beltG)"/>
+              {/* Belt highlight stripe */}
+              <rect x="18" y="61" width="36" height="1.5" rx="0" fill="#303030" opacity="0.8"/>
+              {/* Belt center knot */}
+              <rect x="31" y="59.5" width="10" height="8" rx="1" fill="#1a1a1a"/>
+              <rect x="32" y="60.5" width="8" height="6" rx="0.5" fill="#252525"/>
             </g>
-            
+
             {/* Neck */}
-            <rect x="31" y="37" width="10" height="9" rx="3" fill="#c4a882"/>
-            
-            {/* Head */}
-            <ellipse cx="36" cy="28" rx="14" ry="16" fill="#c4a882"/>
-            
-            {/* Jawline — squarer */}
-            <rect x="24" y="32" width="24" height="8" rx="3" fill="#c4a882"/>
-            
-            {/* Hair — dark, short */}
-            <ellipse cx="36" cy="15" rx="14" ry="8" fill="#2d2d2d"/>
-            <rect x="22" y="13" width="28" height="6" fill="#2d2d2d"/>
-            
+            <path d="M30,41 Q36,44 42,41 L41,47 Q36,50 31,47 Z" fill="#bf7d50"/>
+            {/* Neck shadow */}
+            <ellipse cx="36" cy="47" rx="6" ry="2" fill="#9a6035" opacity="0.4"/>
+
+            {/* Ears (behind head) */}
+            <ellipse cx="21" cy="28" rx="3.5" ry="5.5" fill="#bf7d50"/>
+            <ellipse cx="21" cy="28" rx="2" ry="3.5" fill="#a86840"/>
+            <ellipse cx="51" cy="28" rx="3.5" ry="5.5" fill="#bf7d50"/>
+            <ellipse cx="51" cy="28" rx="2" ry="3.5" fill="#a86840"/>
+
+            {/* Head — rounded with defined jaw */}
+            <ellipse cx="36" cy="26" rx="14.5" ry="16" fill="url(#skinG)"/>
+            {/* Jawline extension */}
+            <ellipse cx="36" cy="38" rx="12" ry="5.5" fill="#bf7d50"/>
+            {/* Jaw highlight */}
+            <ellipse cx="36" cy="40" rx="8" ry="2.5" fill="#d4956a" opacity="0.35"/>
+
+            {/* Hair — short, textured */}
+            <ellipse cx="36" cy="12" rx="14.5" ry="8" fill="url(#hairG)"/>
+            <rect x="21.5" y="11" width="29" height="7" fill="url(#hairG)"/>
+            {/* Hair fade at temples */}
+            <ellipse cx="22" cy="18" rx="4" ry="4" fill="url(#hairG)" opacity="0.8"/>
+            <ellipse cx="50" cy="18" rx="4" ry="4" fill="url(#hairG)" opacity="0.8"/>
+            {/* Hair texture lines */}
+            <path d="M24,13 Q36,10 48,13" stroke="#1a1005" strokeWidth="1" fill="none" opacity="0.6"/>
+            <path d="M26,16 Q36,13 46,16" stroke="#1a1005" strokeWidth="0.7" fill="none" opacity="0.4"/>
+
+            {/* Stubble / beard shadow */}
+            <ellipse cx="36" cy="36" rx="11" ry="5" fill="#8a5a30" opacity="0.18"/>
+            <ellipse cx="28" cy="35" rx="4" ry="3" fill="#7a5030" opacity="0.15"/>
+            <ellipse cx="44" cy="35" rx="4" ry="3" fill="#7a5030" opacity="0.15"/>
+
+            {/* Eyebrows — clean, masculine arch */}
+            <path d="M24,21 Q28.5,18.5 33,20.5" stroke="#1a1005" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+            <path d="M39,20.5 Q43.5,18.5 48,21" stroke="#1a1005" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+
             {/* Eyes */}
             {blink ? (
               <>
-                <rect x="26" y="25" width="8" height="2" rx="1" fill="#2d2d2d"/>
-                <rect x="38" y="25" width="8" height="2" rx="1" fill="#2d2d2d"/>
+                <path d="M24.5,27 Q30,25 35,27" stroke="#2d1a08" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                <path d="M37,27 Q42,25 47.5,27" stroke="#2d1a08" strokeWidth="2" fill="none" strokeLinecap="round"/>
               </>
             ) : (
               <>
+                {/* Eye shadow upper */}
+                <ellipse cx="30" cy="26.5" rx="5.5" ry="4.5" fill="#1a0a04" opacity="0.25"/>
+                <ellipse cx="42" cy="26.5" rx="5.5" ry="4.5" fill="#1a0a04" opacity="0.25"/>
                 {/* Eye whites */}
-                <ellipse cx="30" cy="27" rx="5" ry="4" fill="white"/>
-                <ellipse cx="42" cy="27" rx="5" ry="4" fill="white"/>
-                {/* Irises */}
-                <ellipse cx="31" cy="27" rx="3" ry="3" fill="#2563eb"/>
-                <ellipse cx="43" cy="27" rx="3" ry="3" fill="#2563eb"/>
+                <ellipse cx="30" cy="26.5" rx="5" ry="3.8" fill="#f5f5f5"/>
+                <ellipse cx="42" cy="26.5" rx="5" ry="3.8" fill="#f5f5f5"/>
+                {/* Irises — warm dark brown */}
+                <ellipse cx="30.5" cy="26.8" rx="3.2" ry="3.2" fill="#3d200a"/>
+                <ellipse cx="42.5" cy="26.8" rx="3.2" ry="3.2" fill="#3d200a"/>
+                {/* Iris ring */}
+                <ellipse cx="30.5" cy="26.8" rx="2.5" ry="2.5" fill="#5a2e0e"/>
+                <ellipse cx="42.5" cy="26.8" rx="2.5" ry="2.5" fill="#5a2e0e"/>
                 {/* Pupils */}
-                <ellipse cx="31.5" cy="27" rx="1.8" ry="2" fill="#111"/>
-                <ellipse cx="43.5" cy="27" rx="1.8" ry="2" fill="#111"/>
-                {/* Glint */}
-                <circle cx="32" cy="26" r="0.8" fill="white"/>
-                <circle cx="44" cy="26" r="0.8" fill="white"/>
+                <ellipse cx="30.5" cy="26.8" rx="1.6" ry="1.6" fill="#050505"/>
+                <ellipse cx="42.5" cy="26.8" rx="1.6" ry="1.6" fill="#050505"/>
+                {/* Eye glints */}
+                <circle cx="31.6" cy="25.6" r="0.9" fill="white"/>
+                <circle cx="43.6" cy="25.6" r="0.9" fill="white"/>
+                <circle cx="29.8" cy="27.4" r="0.4" fill="white" opacity="0.5"/>
+                <circle cx="41.8" cy="27.4" r="0.4" fill="white" opacity="0.5"/>
+                {/* Upper lash line */}
+                <path d="M24.5,23.5 Q30,22 35,23.5" stroke="#0d0d0d" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+                <path d="M37,23.5 Q42,22 47.5,23.5" stroke="#0d0d0d" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
               </>
             )}
-            
-            {/* Eyebrows — intense/heavy */}
-            <rect x="25" y="21" width="10" height="3" rx="1.5" fill="#1a1a1a" transform="rotate(-8,30,22)"/>
-            <rect x="37" y="21" width="10" height="3" rx="1.5" fill="#1a1a1a" transform="rotate(8,42,22)"/>
-            
-            {/* Nose */}
-            <ellipse cx="36" cy="32" rx="2.5" ry="1.5" fill="#b0906a"/>
-            
-            {/* Mouth — slight frown/intense */}
-            <path d="M31 36 Q36 35 41 36" stroke="#8a6650" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-            
-            {/* Ear */}
-            <ellipse cx="22" cy="28" rx="3" ry="5" fill="#b8906a"/>
-            <ellipse cx="50" cy="28" rx="3" ry="5" fill="#b8906a"/>
+
+            {/* Nose — defined bridge + tip */}
+            <path d="M35,29 L33.5,34 Q36,36 38.5,34 L37,29" fill="#a86535" opacity="0.5"/>
+            <ellipse cx="34" cy="34.5" rx="2" ry="1.5" fill="#9a5e30" opacity="0.6"/>
+            <ellipse cx="38" cy="34.5" rx="2" ry="1.5" fill="#9a5e30" opacity="0.6"/>
+            <ellipse cx="36" cy="35" rx="1.5" ry="1" fill="#bf7d50"/>
+
+            {/* Mouth — confident slight smile */}
+            <path d="M30,38.5 Q33,37.5 36,38 Q39,37.5 42,38.5" stroke="#7a4020" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+            {/* Lower lip */}
+            <path d="M31,38.8 Q36,40.5 41,38.8" stroke="#9a5535" strokeWidth="0.8" fill="none" strokeLinecap="round" opacity="0.6"/>
+            {/* Smile dimples */}
+            <circle cx="30.5" cy="38.2" r="0.8" fill="#a06040" opacity="0.4"/>
+            <circle cx="41.5" cy="38.2" r="0.8" fill="#a06040" opacity="0.4"/>
+
+            {/* Cheek highlight */}
+            <ellipse cx="24" cy="31" rx="4" ry="2.5" fill="#e0a070" opacity="0.2"/>
+            <ellipse cx="48" cy="31" rx="4" ry="2.5" fill="#e0a070" opacity="0.2"/>
           </svg>
         </div>
       </div>

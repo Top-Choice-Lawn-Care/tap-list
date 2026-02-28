@@ -796,11 +796,13 @@ function SubgraphView({
   positionId,
   positionGraph,
   setNavStack,
+  openVideo,
 }: {
   positionId: string;
   positionGraph: Record<string, PositionData>;
   navStack: string[];
   setNavStack: React.Dispatch<React.SetStateAction<string[]>>;
+  openVideo?: (query: string) => void;
 }) {
   const { fitView } = useReactFlow();
   const { nodes, edges } = computeSubgraph(positionId, positionGraph);
@@ -823,13 +825,17 @@ function SubgraphView({
         setNavStack((prev) => [...prev, d.targetId!]);
       } else if (d.type === 'submission' || d.type === 'takedown') {
         const raw = (d.label_raw as string) || (d.label as string) || '';
-        window.open(
-          `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(raw)}+tutorial`,
-          '_blank'
-        );
+        if (openVideo) {
+          openVideo(raw);
+        } else {
+          window.open(
+            `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(raw)}+tutorial`,
+            '_blank'
+          );
+        }
       }
     },
-    [setNavStack]
+    [setNavStack, openVideo]
   );
 
   return (
@@ -857,7 +863,7 @@ function SubgraphView({
 
 // ─── Root Component ───────────────────────────────────────────────────────────
 
-export default function GamePlanFlow() {
+export default function GamePlanFlow({ openVideo }: { openVideo?: (query: string) => void }) {
   const [navStack, setNavStack] = useState<string[]>([]);
   const [activeQuote, setActiveQuote] = useState<ProfessorQuote | null>(null);
 
@@ -954,6 +960,7 @@ export default function GamePlanFlow() {
                 positionGraph={POSITION_GRAPH}
                 navStack={navStack}
                 setNavStack={setNavStack}
+                openVideo={openVideo}
               />
             </ReactFlowProvider>
           </div>

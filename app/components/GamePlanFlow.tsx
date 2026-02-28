@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // @xyflow/react kept as dependency but not used in drill-down view
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type {} from '@xyflow/react';
@@ -21,6 +21,310 @@ interface PositionData {
   emoji: string;
   label: string;
   options: Option[];
+}
+
+// ─── Professor Quotes ─────────────────────────────────────────────────────────
+// Inlined for self-containment (best 25 of 40)
+
+type ProfessorQuote = {
+  id: string;
+  category: 'general' | 'position' | 'submission' | 'training';
+  positionId?: string;
+  text: string;
+  attribution: string;
+};
+
+const PROFESSOR_QUOTES: ProfessorQuote[] = [
+  // General philosophy
+  {
+    id: 'prof-001',
+    category: 'general',
+    text: 'Jiu-jitsu is not a collection of techniques. It is a language — and until you learn to speak it fluently under pressure, you are merely reciting phrases you memorized from a book.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-002',
+    category: 'general',
+    text: 'Progress in this art does not arrive on a schedule. It arrives when you have earned it through repetition that would bore most people senseless, applied with a precision most people are too impatient to develop.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-003',
+    category: 'general',
+    text: 'The man who can remain emotionally calm while his body is under duress has a catastrophic advantage over the man who cannot. Composure is not a personality trait. It is a skill, and it is trained.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-004',
+    category: 'general',
+    text: 'Efficiency is not laziness. Efficiency is the elimination of everything that does not contribute to the outcome. Most people fight with tremendous effort and terrible results precisely because they confuse movement with progress.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-005',
+    category: 'general',
+    text: 'Jiu-jitsu punishes urgency. The man who rushes to finish is the man who has surrendered control in his haste to demonstrate that he has it.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-006',
+    category: 'general',
+    text: 'The hierarchy of positions exists not as a matter of preference, but as a mathematical consequence of what the human body can and cannot do. Back mount is highest. Argue with geometry if you disagree.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-007',
+    category: 'general',
+    text: 'You came here to learn to fight. What you will discover, if you stay long enough, is that you are really learning to think. The mats are just where the thinking becomes consequential.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-008',
+    category: 'general',
+    text: 'Your body learns what you teach it. Teach it the correct movement ten thousand times and it will execute under pressure. Teach it the wrong movement ten thousand times and you have built a very reliable machine for losing.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-009',
+    category: 'general',
+    text: 'Every technique you know has a context in which it will fail. The mark of an educated grappler is not knowing the technique — it is knowing the context.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-010',
+    category: 'general',
+    text: 'You will not improve by rolling hard with people your own skill level. You will improve by isolating your weaknesses with focused, humble, slightly humiliating deliberateness. The ego finds this intolerable. That is precisely why it works.',
+    attribution: '— The Professor',
+  },
+  // Position-specific
+  {
+    id: 'prof-011',
+    category: 'position',
+    positionId: 'closed-guard',
+    text: 'The closed guard is a trap, not a resting place. The moment you treat it as a place to recover your breath, your opponent will begin to treat it as a place to pass. Create threats or be threatened. There is no third option.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-012',
+    category: 'position',
+    positionId: 'half-guard',
+    text: 'Half guard is a position that rewards the underhook with everything and punishes its absence with suffering. Get the underhook or accept that you are merely slowing down a pass that has already begun.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-013',
+    category: 'position',
+    positionId: 'side-control-bottom',
+    text: 'When you are on the bottom of side control, your frame is your entire world. Collapse the frame and you have collapsed all your options simultaneously. This is not the time for courage. This is the time for geometry.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-014',
+    category: 'position',
+    positionId: 'mount-bottom',
+    text: 'Being mounted is not a defeat — it is an invitation to demonstrate patience and precision under the worst conditions. The elbow-knee escape has survived fifty years of hard testing. It works. Your interpretation of it may not.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-015',
+    category: 'position',
+    positionId: 'back-bottom',
+    text: 'When your back is taken, your neck is the most important real estate on your body. Guard it as though your continued participation in consciousness depends on it — because it does. Everything else is secondary to the chin tuck.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-016',
+    category: 'position',
+    positionId: 'standing',
+    text: 'Before you can take anyone down, you must first understand that they do not wish to be taken down. The takedown is not a movement — it is a disruption of balance, a theft of the ground beneath their feet. Off-balance them first. Always first.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-017',
+    category: 'position',
+    positionId: 'mount-top',
+    text: 'Mounted, you have three tasks in ascending order of importance: maintain position, improve position, find a finish. Most people invert this list and lose the mount chasing a finish they had not yet earned the right to attempt.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-018',
+    category: 'position',
+    positionId: 'side-control-top',
+    text: 'Side control is not where you relax. It is where you break the spirit of resistance. Apply consistent, uncomfortable pressure. When they choose between suffering where they are and moving to escape, they will move — and that movement is your invitation.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-019',
+    category: 'position',
+    positionId: 'back-mount-top',
+    text: 'The back is the pinnacle. It is the position from which your opponent cannot see your hands, cannot predict your threats, and cannot address more than one danger at a time. Guard your hooks with as much tenacity as you pursue the choke. A back without hooks is a gift you are about to return.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-020',
+    category: 'position',
+    positionId: 'guard-passing',
+    text: 'Guard passing is fundamentally a problem of control over the hips. The guard player\'s hips are the source of every threat they possess. Pin the hips or redirect them, and the guard collapses not because you defeated it but because you removed the structure that held it up.',
+    attribution: '— The Professor',
+  },
+  // Submissions
+  {
+    id: 'prof-021',
+    category: 'submission',
+    text: 'The submission is not the goal. The submission is the reward for achieving positional dominance and maintaining it long enough that an opportunity presents itself. Those who pursue the submission as a goal frequently find that they have sacrificed the position and secured neither.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-022',
+    category: 'submission',
+    text: 'Among all forms of submission, the strangling arts occupy a special place. A joint lock requires the opponent to feel pain and decide to yield. A properly applied strangulation removes the decision entirely. There is a philosophical elegance to that which I find difficult to overstate.',
+    attribution: '— The Professor',
+  },
+  // Training
+  {
+    id: 'prof-023',
+    category: 'training',
+    text: 'Drilling installs the movement in the body. Sparring reveals whether the installation took. These are not competing methods — they are sequential ones. A man who only spars is guessing. A man who only drills has never tested the answer.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-024',
+    category: 'training',
+    text: 'Roll with people who make you uncomfortable. That discomfort is not a sign the training is going poorly. It is evidence the training is going exactly as it should.',
+    attribution: '— The Professor',
+  },
+  {
+    id: 'prof-025',
+    category: 'training',
+    text: 'The long game of jiu-jitsu development is invisible to the beginner and self-evident to the veteran. Trust the process. It is longer than you want and more rewarding than you can currently conceive.',
+    attribution: '— The Professor',
+  },
+];
+
+function getGeneralQuote(): ProfessorQuote {
+  const generals = PROFESSOR_QUOTES.filter((q) => q.category === 'general');
+  return generals[Math.floor(Math.random() * generals.length)];
+}
+
+function getPositionQuote(positionId: string): ProfessorQuote | null {
+  const match = PROFESSOR_QUOTES.find(
+    (q) => q.category === 'position' && q.positionId === positionId
+  );
+  return match ?? null;
+}
+
+// ─── Professor Modal ──────────────────────────────────────────────────────────
+
+function ProfessorModal({
+  quote,
+  onDismiss,
+}: {
+  quote: ProfessorQuote;
+  onDismiss: () => void;
+}) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, 8000);
+    return () => clearTimeout(timer);
+  }, [onDismiss]);
+
+  return (
+    // Backdrop — tap anywhere outside the card to dismiss
+    <div
+      onClick={onDismiss}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        animation: 'profFadeIn 0.25s ease',
+        paddingBottom: '0px',
+      }}
+    >
+      {/* Card — stop click from bubbling */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          maxWidth: '480px',
+          backgroundColor: '#0f0f18',
+          border: '1px solid #2a2a3a',
+          borderRadius: '18px 18px 0 0',
+          padding: '24px 22px 32px',
+          animation: 'profSlideUp 0.28s cubic-bezier(0.34, 1.2, 0.64, 1)',
+          boxSizing: 'border-box',
+        }}
+      >
+        {/* Header row */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#9333ea',
+              letterSpacing: '0.02em',
+            }}
+          >
+            🎓 The Professor
+          </span>
+          <button
+            onClick={onDismiss}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#6b7280',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              padding: '4px 8px',
+              borderRadius: '6px',
+            }}
+          >
+            Dismiss
+          </button>
+        </div>
+
+        {/* Quote text */}
+        <p
+          style={{
+            margin: '0 0 14px',
+            fontSize: '14px',
+            lineHeight: '1.65',
+            color: '#d1d5db',
+            fontStyle: 'italic',
+          }}
+        >
+          &ldquo;{quote.text}&rdquo;
+        </p>
+
+        {/* Attribution */}
+        <div style={{ fontSize: '11px', color: '#6b7280' }}>
+          {quote.attribution}
+        </div>
+      </div>
+
+      {/* Keyframe styles */}
+      <style>{`
+        @keyframes profFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes profSlideUp {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 // ─── Full Position Graph ──────────────────────────────────────────────────────
@@ -118,7 +422,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Armbar',            type: 'submission' },
       { label: 'Americana',         type: 'submission' },
       { label: 'Ezekiel Choke',     type: 'submission' },
-      { label: 'Head and Arm Triangle', type: 'submission' },
       { label: 'Back Mount (top)', type: 'transition', targetId: 'back-mount-top',   edgeLabel: 'take back' },
       { label: 'Side Control (top)',type: 'transition', targetId: 'side-control-top', edgeLabel: 'they roll' },
     ],
@@ -131,7 +434,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Kimura',            type: 'submission' },
       { label: "D'Arce Choke",      type: 'submission' },
       { label: 'North-South Choke', type: 'submission' },
-      { label: 'Head and Arm Triangle', type: 'submission' },
       { label: 'Mount (top)',       type: 'transition', targetId: 'mount-top',        edgeLabel: 'advance to mount' },
       { label: 'Back Mount (top)', type: 'transition', targetId: 'back-mount-top',   edgeLabel: 'take back' },
     ],
@@ -145,6 +447,18 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Armbar',           type: 'submission' },
       { label: 'Collar Choke',     type: 'submission' },
       { label: 'Mount (top)',      type: 'transition', targetId: 'mount-top', edgeLabel: 'they escape to front' },
+    ],
+  },
+  'guard-top': {
+    id: 'guard-top', emoji: '🦅', label: 'Guard (top)',
+    options: [
+      { label: 'Torreando Pass',       type: 'transition', targetId: 'side-control-top', edgeLabel: 'pass guard' },
+      { label: 'Double Under Pass',    type: 'transition', targetId: 'side-control-top', edgeLabel: 'stack & pass' },
+      { label: 'Leg Drag Pass',        type: 'transition', targetId: 'side-control-top', edgeLabel: 'drag & pass' },
+      { label: 'Over-Under Pass',      type: 'transition', targetId: 'side-control-top', edgeLabel: 'grind through' },
+      { label: 'Knee Slice Pass',      type: 'transition', targetId: 'side-control-top', edgeLabel: 'slice through' },
+      { label: 'Back Take',            type: 'transition', targetId: 'back-mount-top',   edgeLabel: 'if they turn' },
+      { label: 'Footlock / Heel Hook', type: 'submission',                                edgeLabel: 'leg entanglement' },
     ],
   },
 };
@@ -507,9 +821,25 @@ function PositionView({
 
 export default function GamePlanFlow() {
   const [navStack, setNavStack] = useState<string[]>([]);
+  const [activeQuote, setActiveQuote] = useState<ProfessorQuote | null>(null);
+
+  // Show a random general quote on first load
+  useEffect(() => {
+    const q = getGeneralQuote();
+    // Small delay so the UI renders first
+    const t = setTimeout(() => setActiveQuote(q), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  const dismissQuote = useCallback(() => setActiveQuote(null), []);
 
   const handleSelect = (id: string) => {
     setNavStack([id]);
+    // Show position-specific quote if one exists
+    const q = getPositionQuote(id);
+    if (q) {
+      setActiveQuote(q);
+    }
   };
 
   const handleBack = () => {
@@ -518,6 +848,11 @@ export default function GamePlanFlow() {
 
   const handlePush = (id: string) => {
     setNavStack((stack) => [...stack, id]);
+    // Show position-specific quote if one exists
+    const q = getPositionQuote(id);
+    if (q) {
+      setActiveQuote(q);
+    }
   };
 
   // Jump to a specific index in the stack (-1 = home)
@@ -540,6 +875,11 @@ export default function GamePlanFlow() {
           onPush={handlePush}
           onJump={handleJump}
         />
+      )}
+
+      {/* Professor Modal */}
+      {activeQuote && (
+        <ProfessorModal quote={activeQuote} onDismiss={dismissQuote} />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import {
   type Node,
   type Edge,
   type NodeMouseHandler,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -818,6 +819,39 @@ function SubgraphView({
     }
   }, [positionId, fitView]);
 
+  const onInit = useCallback((rfInstance: ReactFlowInstance) => {
+    const allNodes = rfInstance.getNodes();
+    const allEdges = rfInstance.getEdges();
+
+    // Find root node (first node is the center/current position)
+    const rootNodeId = allNodes[0]?.id;
+    if (!rootNodeId) return;
+
+    // Get direct children (1 hop from root)
+    const level1Ids = new Set<string>([rootNodeId]);
+    allEdges.forEach((e) => {
+      if (e.source === rootNodeId) level1Ids.add(e.target);
+    });
+
+    // Get level 2 children
+    const level2Ids = new Set<string>(level1Ids);
+    allEdges.forEach((e) => {
+      if (level1Ids.has(e.source)) level2Ids.add(e.target);
+    });
+
+    const focusNodes = allNodes.filter((n) => level2Ids.has(n.id));
+
+    setTimeout(() => {
+      rfInstance.fitView({
+        nodes: focusNodes,
+        padding: 0.2,
+        duration: 300,
+        minZoom: 0.5,
+        maxZoom: 1.2,
+      });
+    }, 50);
+  }, []);
+
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
       const d = node.data as { type: string; targetId?: string; label?: string; label_raw?: string };
@@ -843,8 +877,8 @@ function SubgraphView({
       nodes={nodes}
       edges={edges}
       onNodeClick={onNodeClick}
-      fitView
-      fitViewOptions={{ padding: 0.12 }}
+      onInit={onInit}
+      fitView={false}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}

@@ -17,7 +17,7 @@ const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
 type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
 type Submission = { name: string; category: string; };
-type Tab = "taplist" | "flow" | "gameplan" | "timer";
+type Tab = "taplist" | "gameplan" | "timer";
 
 // ─── Submissions ──────────────────────────────────────────────────────────────
 
@@ -130,79 +130,7 @@ const T = {
   purple: "#7c3aed",
 };
 
-// ─── Flow Positions (Flow tab) ────────────────────────────────────────────────
 
-type OptionType = "submission" | "sweep" | "escape" | "transition" | "takedown";
-type FlowOption = { name: string; type: OptionType; };
-type FlowPosition = { id: string; label: string; emoji: string; options: FlowOption[]; };
-
-const TYPE_COLORS: Record<OptionType, string> = {
-  submission: "#dc2626", sweep: "#2563eb", escape: "#16a34a", transition: "#7c3aed", takedown: "#7c3aed",
-};
-const TYPE_LABELS: Record<OptionType, string> = {
-  submission: "Submission", sweep: "Sweep", escape: "Escape", transition: "Transition", takedown: "Takedown",
-};
-const TYPE_SURFACES: Record<OptionType, string> = {
-  submission: "rgba(220,38,38,0.10)", sweep: "rgba(37,99,235,0.10)", escape: "rgba(22,163,74,0.10)",
-  transition: "rgba(124,58,237,0.10)", takedown: "rgba(124,58,237,0.10)",
-};
-
-const FLOW_POSITIONS: FlowPosition[] = [
-  { id: "closed-guard-bottom", label: "Closed Guard (bottom)", emoji: "🔒",
-    options: [
-      { name: "Triangle Choke", type: "submission" }, { name: "Armbar", type: "submission" },
-      { name: "Kimura", type: "submission" }, { name: "Hip Bump Sweep → Mount", type: "sweep" },
-      { name: "Scissor Sweep → Mount", type: "sweep" },
-    ]},
-  { id: "open-guard-bottom", label: "Open Guard (bottom)", emoji: "🕸️",
-    options: [
-      { name: "Spider Guard → Triangle", type: "submission" }, { name: "De La Riva → Back Take", type: "transition" },
-      { name: "Lasso Guard → Omoplata", type: "submission" }, { name: "Sit-Up Guard → Single Leg", type: "takedown" },
-    ]},
-  { id: "half-guard-bottom", label: "Half Guard (bottom)", emoji: "↔️",
-    options: [
-      { name: "Deep Half → Homer Simpson Sweep", type: "sweep" }, { name: "Kimura", type: "submission" },
-      { name: "Take the Back", type: "transition" }, { name: "Dogfight → Back Take", type: "transition" },
-    ]},
-  { id: "mount-top", label: "Mount (top)", emoji: "👑",
-    options: [
-      { name: "Armbar", type: "submission" }, { name: "Americana", type: "submission" },
-      { name: "Ezekiel Choke", type: "submission" }, { name: "Take the Back → RNC", type: "transition" },
-      { name: "S-Mount → Armbar", type: "submission" },
-    ]},
-  { id: "mount-bottom", label: "Mount (bottom — escaping)", emoji: "⬇️",
-    options: [
-      { name: "Elbow-Knee Escape → Guard", type: "escape" }, { name: "Upa Bridge & Roll → Guard", type: "escape" },
-      { name: "Take the Back", type: "transition" },
-    ]},
-  { id: "back-mount", label: "Back Mount (attacking)", emoji: "🎯",
-    options: [
-      { name: "Rear Naked Choke", type: "submission" }, { name: "Bow & Arrow Choke", type: "submission" },
-      { name: "Armbar from Back", type: "submission" }, { name: "Collar Choke", type: "submission" },
-    ]},
-  { id: "side-control-top", label: "Side Control (top)", emoji: "🔝",
-    options: [
-      { name: "Americana", type: "submission" }, { name: "Kimura", type: "submission" },
-      { name: "North-South Choke", type: "submission" }, { name: "Take Mount", type: "transition" },
-      { name: "Darce Choke", type: "submission" },
-    ]},
-  { id: "side-control-bottom", label: "Side Control (bottom — escaping)", emoji: "🚪",
-    options: [
-      { name: "Shrimp to Guard", type: "escape" }, { name: "Granby Roll", type: "escape" },
-      { name: "Underhook → Knees", type: "escape" },
-    ]},
-  { id: "turtle", label: "Turtle (defending)", emoji: "🐢",
-    options: [
-      { name: "Granby Roll", type: "escape" }, { name: "Stand Up", type: "escape" },
-      { name: "Sit Out", type: "escape" }, { name: "Back Take Defense", type: "escape" },
-    ]},
-  { id: "standing", label: "Standing", emoji: "🧍",
-    options: [
-      { name: "Double Leg Takedown", type: "takedown" }, { name: "Single Leg Takedown", type: "takedown" },
-      { name: "Hip Throw (O-Goshi)", type: "takedown" }, { name: "Guard Pull", type: "transition" },
-      { name: "Snap Down → Guillotine", type: "submission" },
-    ]},
-];
 
 // ─── Professor Max SVG Character ──────────────────────────────────────────────
 
@@ -865,8 +793,6 @@ export default function Home() {
   const [modalNote, setModalNote] = useState<string>("");
   const [shareMsg, setShareMsg] = useState<string>("");
   const [hydrated, setHydrated] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState<FlowPosition | null>(null);
-
   // Video modal
   const [videoQuery, setVideoQuery] = useState<string | null>(null);
 
@@ -1012,13 +938,13 @@ export default function Home() {
           padding: "3px", borderRadius: "10px",
           border: `1px solid ${T.borderSubtle}`,
         }}>
-          {(["gameplan", "flow", "taplist", "timer"] as Tab[]).map((tab) => {
+          {(["gameplan", "taplist", "timer"] as Tab[]).map((tab) => {
             const labels: Record<Tab, string> = {
-              taplist: "🥋 Taps", flow: "🗺️ Flow", gameplan: "🔗 Plan", timer: "⏱️ Timer"
+              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer"
             };
             const isActive = activeTab === tab;
             return (
-              <button key={tab} onClick={() => { setActiveTab(tab); if (tab === "flow") setSelectedPosition(null); }}
+              <button key={tab} onClick={() => { setActiveTab(tab); }}
                 style={{
                   flex: 1, padding: "8px 4px", fontSize: "12px",
                   fontWeight: isActive ? 700 : 500, fontFamily: "inherit",
@@ -1216,107 +1142,6 @@ export default function Home() {
             })}
           </div>
         </>
-      )}
-
-      {/* ══════════════════════════════════════════
-          FLOW TAB
-      ══════════════════════════════════════════ */}
-      {activeTab === "flow" && (
-        <div style={{ padding: "0 16px" }}>
-          {!selectedPosition ? (
-            <>
-              <div style={{ padding: "16px 0 10px", fontSize: "13px", color: T.textTertiary, lineHeight: "1.5" }}>
-                Where are you on the mat? Pick a position to see your options.
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "16px" }}>
-                {FLOW_POSITIONS.map((pos) => (
-                  <button key={pos.id} onClick={() => setSelectedPosition(pos)}
-                    style={{
-                      backgroundColor: T.surface, border: `1px solid ${T.borderSubtle}`,
-                      borderRadius: "10px", padding: "14px 16px",
-                      cursor: "pointer", fontFamily: "inherit",
-                      display: "flex", alignItems: "center", gap: "12px",
-                      textAlign: "left", width: "100%",
-                      transition: "all 0.15s ease", WebkitTapHighlightColor: "transparent",
-                    }}>
-                    <span style={{ fontSize: "26px", lineHeight: 1, flexShrink: 0 }}>{pos.emoji}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: T.textPrimary }}>{pos.label}</div>
-                      <div style={{ fontSize: "12px", color: T.textTertiary, marginTop: "2px" }}>{pos.options.length} options</div>
-                    </div>
-                    <span style={{ color: T.textDisabled, fontSize: "18px", flexShrink: 0 }}>›</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ padding: "14px 0 0" }}>
-                <button onClick={() => setSelectedPosition(null)}
-                  style={{
-                    backgroundColor: "transparent", border: "none",
-                    color: T.purple, fontSize: "14px", fontWeight: 600,
-                    fontFamily: "inherit", cursor: "pointer",
-                    padding: "0 0 12px 0", display: "flex", alignItems: "center", gap: "4px",
-                    WebkitTapHighlightColor: "transparent",
-                  }}>
-                  ‹ All Positions
-                </button>
-                <div style={{
-                  backgroundColor: T.surface, border: `1px solid ${T.borderSubtle}`,
-                  borderLeft: `3px solid ${T.purple}`, borderRadius: "10px",
-                  padding: "14px 16px", marginBottom: "12px",
-                  boxShadow: `0 0 0 1px rgba(124,58,237,0.08)`,
-                }}>
-                  <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1.5px", color: T.purple, textTransform: "uppercase", marginBottom: "4px" }}>
-                    You are here
-                  </div>
-                  <div style={{ fontSize: "19px", fontWeight: 800, color: T.textPrimary, display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span>{selectedPosition.emoji}</span><span>{selectedPosition.label}</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingBottom: "16px" }}>
-                {selectedPosition.options.map((opt, i) => {
-                  const color = TYPE_COLORS[opt.type];
-                  const label = TYPE_LABELS[opt.type];
-                  const surface = TYPE_SURFACES[opt.type];
-                  return (
-                    <div key={i} style={{
-                      backgroundColor: T.surface, border: `1px solid ${T.borderSubtle}`,
-                      borderLeft: `3px solid ${color}`, borderRadius: "10px",
-                      padding: "14px 14px 12px", display: "flex", alignItems: "center", gap: "12px",
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: T.textPrimary, lineHeight: "1.35" }}>{opt.name}</div>
-                        <div style={{
-                          display: "inline-block", marginTop: "5px",
-                          backgroundColor: surface, color: color,
-                          border: `1px solid ${color}44`, borderRadius: "4px",
-                          padding: "1px 7px", fontSize: "10px", fontWeight: 700,
-                          letterSpacing: "0.6px", textTransform: "uppercase",
-                        }}>
-                          {label}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => openVideo(opt.name)}
-                        style={{
-                          background: "none", border: "none", padding: "4px",
-                          fontSize: "20px", opacity: 0.55, cursor: "pointer",
-                          lineHeight: 1, flexShrink: 0, WebkitTapHighlightColor: "transparent",
-                        }}
-                        title={`Watch ${opt.name} tutorial`}
-                      >
-                        🎥
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
       )}
 
       {/* ══════════════════════════════════════════

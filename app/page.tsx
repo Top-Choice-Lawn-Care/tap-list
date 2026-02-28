@@ -801,6 +801,19 @@ export default function Home() {
     closeModal();
   }
 
+  function deleteTap(subName: string, index: number) {
+    setTapData((prev) => {
+      const existing = prev[subName] ?? [];
+      const updated = existing.filter((_, i) => i !== index);
+      if (updated.length === 0) {
+        const next = { ...prev };
+        delete next[subName];
+        return next;
+      }
+      return { ...prev, [subName]: updated };
+    });
+  }
+
   function handleShare() {
     let topMove = "none", topCount = 0;
     for (const [name, entries] of Object.entries(tapData)) {
@@ -1113,7 +1126,43 @@ export default function Home() {
             <h2 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 800, color: T.textPrimary }}>
               Log a tap! 🥋
             </h2>
-            <p style={{ margin: "0 0 20px 0", fontSize: "14px", color: T.red, fontWeight: 700 }}>{modalSub}</p>
+            <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: T.red, fontWeight: 700 }}>{modalSub}</p>
+
+            {/* Existing tap history with delete */}
+            {modalSub && (tapData[modalSub]?.length ?? 0) > 0 && (
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 700, color: T.textTertiary, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.8px" }}>
+                  Logged taps
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "5px", maxHeight: "120px", overflowY: "auto" }}>
+                  {(tapData[modalSub] ?? []).map((entry, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      backgroundColor: T.surface, border: `1px solid ${T.borderSubtle}`,
+                      borderRadius: "8px", padding: "6px 10px",
+                    }}>
+                      <div>
+                        <span style={{ fontSize: "13px", color: T.textPrimary, fontWeight: 600 }}>{entry.date}</span>
+                        {entry.note && <span style={{ fontSize: "11px", color: T.textTertiary, marginLeft: "8px" }}>{entry.note}</span>}
+                      </div>
+                      <button
+                        onClick={() => deleteTap(modalSub!, i)}
+                        style={{
+                          background: "none", border: "none", color: "#6b7280",
+                          fontSize: "16px", cursor: "pointer", padding: "2px 6px",
+                          lineHeight: 1, borderRadius: "4px", flexShrink: 0,
+                          fontFamily: "inherit",
+                        }}
+                        title="Remove this tap"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: T.textTertiary, marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.8px" }}>
               Date
             </label>

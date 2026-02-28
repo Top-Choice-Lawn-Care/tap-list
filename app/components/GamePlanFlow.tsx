@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-// @xyflow/react kept as dependency but not used in drill-down view
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type {} from '@xyflow/react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
+  Background,
+  type Node,
+  type Edge,
+  type NodeMouseHandler,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -12,8 +19,8 @@ type OptionType = 'submission' | 'transition' | 'takedown';
 interface Option {
   label: string;
   type: OptionType;
-  targetId?: string;   // if transition/takedown, which position to push
-  edgeLabel?: string;  // context label, e.g. "hip bump sweep"
+  targetId?: string;
+  edgeLabel?: string;
 }
 
 interface PositionData {
@@ -24,7 +31,6 @@ interface PositionData {
 }
 
 // ─── Professor Quotes ─────────────────────────────────────────────────────────
-// Inlined for self-containment (best 25 of 40)
 
 type ProfessorQuote = {
   id: string;
@@ -35,7 +41,6 @@ type ProfessorQuote = {
 };
 
 const PROFESSOR_QUOTES: ProfessorQuote[] = [
-  // General philosophy
   {
     id: 'prof-001',
     category: 'general',
@@ -96,7 +101,6 @@ const PROFESSOR_QUOTES: ProfessorQuote[] = [
     text: 'You will not improve by rolling hard with people your own skill level. You will improve by isolating your weaknesses with focused, humble, slightly humiliating deliberateness. The ego finds this intolerable. That is precisely why it works.',
     attribution: '— Professor Max',
   },
-  // Position-specific
   {
     id: 'prof-011',
     category: 'position',
@@ -164,10 +168,9 @@ const PROFESSOR_QUOTES: ProfessorQuote[] = [
     id: 'prof-020',
     category: 'position',
     positionId: 'guard-top',
-    text: 'Guard passing is fundamentally a problem of control over the hips. The guard player\'s hips are the source of every threat they possess. Pin the hips or redirect them, and the guard collapses not because you defeated it but because you removed the structure that held it up.',
+    text: "Guard passing is fundamentally a problem of control over the hips. The guard player's hips are the source of every threat they possess. Pin the hips or redirect them, and the guard collapses not because you defeated it but because you removed the structure that held it up.",
     attribution: '— Professor Max',
   },
-  // Submissions
   {
     id: 'prof-021',
     category: 'submission',
@@ -180,7 +183,6 @@ const PROFESSOR_QUOTES: ProfessorQuote[] = [
     text: 'Among all forms of submission, the strangling arts occupy a special place. A joint lock requires the opponent to feel pain and decide to yield. A properly applied strangulation removes the decision entirely. There is a philosophical elegance to that which I find difficult to overstate.',
     attribution: '— Professor Max',
   },
-  // Training
   {
     id: 'prof-023',
     category: 'training',
@@ -228,7 +230,6 @@ function ProfessorModal({
   }, [onDismiss]);
 
   return (
-    // Backdrop — tap anywhere outside the card to dismiss
     <div
       onClick={onDismiss}
       style={{
@@ -243,7 +244,6 @@ function ProfessorModal({
         paddingBottom: '0px',
       }}
     >
-      {/* Card — stop click from bubbling */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -257,7 +257,6 @@ function ProfessorModal({
           boxSizing: 'border-box',
         }}
       >
-        {/* Header row */}
         <div
           style={{
             display: 'flex',
@@ -292,8 +291,6 @@ function ProfessorModal({
             Dismiss
           </button>
         </div>
-
-        {/* Quote text */}
         <p
           style={{
             margin: '0 0 14px',
@@ -305,23 +302,11 @@ function ProfessorModal({
         >
           &ldquo;{quote.text}&rdquo;
         </p>
-
-        {/* Attribution */}
-        <div style={{ fontSize: '11px', color: '#6b7280' }}>
-          {quote.attribution}
-        </div>
+        <div style={{ fontSize: '11px', color: '#6b7280' }}>{quote.attribution}</div>
       </div>
-
-      {/* Keyframe styles */}
       <style>{`
-        @keyframes profFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes profSlideUp {
-          from { transform: translateY(100%); }
-          to   { transform: translateY(0); }
-        }
+        @keyframes profFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes profSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
       `}</style>
     </div>
   );
@@ -330,7 +315,6 @@ function ProfessorModal({
 // ─── Full Position Graph ──────────────────────────────────────────────────────
 
 const POSITION_GRAPH: Record<string, PositionData> = {
-
   'closed-guard': {
     id: 'closed-guard', emoji: '🥋', label: 'Closed Guard',
     options: [
@@ -344,7 +328,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Open Guard',      type: 'transition', targetId: 'open-guard',    edgeLabel: 'open up' },
     ],
   },
-
   'open-guard': {
     id: 'open-guard', emoji: '🦵', label: 'Open Guard',
     options: [
@@ -355,7 +338,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Half Guard',        type: 'transition', targetId: 'half-guard',      edgeLabel: 'they pass' },
     ],
   },
-
   'half-guard': {
     id: 'half-guard', emoji: '½', label: 'Half Guard',
     options: [
@@ -366,7 +348,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Side Control (bottom)',type: 'transition', targetId: 'side-control-bottom',  edgeLabel: 'they flatten you' },
     ],
   },
-
   'side-control-bottom': {
     id: 'side-control-bottom', emoji: '😬', label: 'Side Control',
     options: [
@@ -376,7 +357,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Mount (bottom)',type: 'transition', targetId: 'mount-bottom',  edgeLabel: 'they advance' },
     ],
   },
-
   'mount-bottom': {
     id: 'mount-bottom', emoji: '😰', label: 'Mount (bottom)',
     options: [
@@ -385,7 +365,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Side Control (bottom)',type: 'transition', targetId: 'side-control-bottom',  edgeLabel: 'bridge escape' },
     ],
   },
-
   'back-bottom': {
     id: 'back-bottom', emoji: '😱', label: 'Back Taken',
     options: [
@@ -394,7 +373,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Closed Guard',         type: 'transition', targetId: 'closed-guard',        edgeLabel: 'sit through' },
     ],
   },
-
   'turtle': {
     id: 'turtle', emoji: '🐢', label: 'Turtle',
     options: [
@@ -403,7 +381,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Back Mount (top)',     type: 'transition', targetId: 'back-mount-top',       edgeLabel: 'granby roll offense' },
     ],
   },
-
   'standing': {
     id: 'standing', emoji: '🤼', label: 'Standing',
     options: [
@@ -415,7 +392,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Back Mount (top)',    type: 'transition', targetId: 'back-mount-top',      edgeLabel: 'arm drag' },
     ],
   },
-
   'mount-top': {
     id: 'mount-top', emoji: '💪', label: 'Mount (top)',
     options: [
@@ -426,7 +402,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Side Control (top)',type: 'transition', targetId: 'side-control-top', edgeLabel: 'they roll' },
     ],
   },
-
   'side-control-top': {
     id: 'side-control-top', emoji: '🤛', label: 'Side Control (top)',
     options: [
@@ -438,7 +413,6 @@ const POSITION_GRAPH: Record<string, PositionData> = {
       { label: 'Back Mount (top)', type: 'transition', targetId: 'back-mount-top',   edgeLabel: 'take back' },
     ],
   },
-
   'back-mount-top': {
     id: 'back-mount-top', emoji: '🎯', label: 'Back Mount (top)',
     options: [
@@ -466,19 +440,19 @@ const POSITION_GRAPH: Record<string, PositionData> = {
 // ─── Starting Position Cards ──────────────────────────────────────────────────
 
 const DEFENDING_POSITIONS = [
-  { id: 'closed-guard',       emoji: '🥋', label: 'Closed Guard'  },
-  { id: 'half-guard',         emoji: '½',  label: 'Half Guard'    },
-  { id: 'side-control-bottom',emoji: '😬', label: 'Side Control'  },
-  { id: 'mount-bottom',       emoji: '😰', label: 'Mount'         },
-  { id: 'back-bottom',        emoji: '😱', label: 'Back Taken'    },
+  { id: 'closed-guard',        emoji: '🥋', label: 'Closed Guard' },
+  { id: 'half-guard',          emoji: '½',  label: 'Half Guard'   },
+  { id: 'side-control-bottom', emoji: '😬', label: 'Side Control' },
+  { id: 'mount-bottom',        emoji: '😰', label: 'Mount'        },
+  { id: 'back-bottom',         emoji: '😱', label: 'Back Taken'   },
 ];
 
 const ATTACKING_POSITIONS = [
-  { id: 'standing',         emoji: '🤼', label: 'Standing'          },
-  { id: 'guard-top',        emoji: '🦅', label: 'Guard (top)'       },
-  { id: 'mount-top',        emoji: '💪', label: 'Mount (top)'       },
-  { id: 'side-control-top', emoji: '🤛', label: 'Side Control (top)'},
-  { id: 'back-mount-top',   emoji: '🎯', label: 'Back Mount (top)'  },
+  { id: 'standing',         emoji: '🤼', label: 'Standing'           },
+  { id: 'guard-top',        emoji: '🦅', label: 'Guard (top)'        },
+  { id: 'mount-top',        emoji: '💪', label: 'Mount (top)'        },
+  { id: 'side-control-top', emoji: '🤛', label: 'Side Control (top)' },
+  { id: 'back-mount-top',   emoji: '🎯', label: 'Back Mount (top)'   },
 ];
 
 // ─── Home View ────────────────────────────────────────────────────────────────
@@ -495,7 +469,6 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
         overflowY: 'auto',
       }}
     >
-      {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '24px', paddingTop: '8px' }}>
         <div style={{ fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>
           Where are you?
@@ -508,17 +481,12 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
         </div>
       </div>
 
-      {/* DEFENDING section */}
       <div style={{ marginBottom: '4px' }}>
         <div
           style={{
-            fontSize: '10px',
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase' as const,
-            color: '#6b7280',
-            marginBottom: '10px',
-            paddingLeft: '2px',
+            fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const, color: '#6b7280',
+            marginBottom: '10px', paddingLeft: '2px',
           }}
         >
           Defending 🛡️
@@ -529,19 +497,11 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
               key={pos.id}
               onClick={() => onSelect(pos.id)}
               style={{
-                backgroundColor: '#13131a',
-                border: '1.5px solid #2a2a3a',
-                borderRadius: '14px',
-                padding: '20px 16px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-                fontFamily: 'inherit',
-                transition: 'all 0.15s ease',
-                WebkitTapHighlightColor: 'transparent',
-                minHeight: '100px',
+                backgroundColor: '#13131a', border: '1.5px solid #2a2a3a',
+                borderRadius: '14px', padding: '20px 16px', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '10px', fontFamily: 'inherit', transition: 'all 0.15s ease',
+                WebkitTapHighlightColor: 'transparent', minHeight: '100px',
               }}
             >
               <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
@@ -553,20 +513,14 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
         </div>
       </div>
 
-      {/* Divider */}
       <div style={{ height: '1px', backgroundColor: '#1e1e2e', margin: '16px 0 12px' }} />
 
-      {/* ATTACKING section */}
       <div>
         <div
           style={{
-            fontSize: '10px',
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase' as const,
-            color: '#6b7280',
-            marginBottom: '10px',
-            paddingLeft: '2px',
+            fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const, color: '#6b7280',
+            marginBottom: '10px', paddingLeft: '2px',
           }}
         >
           Attacking ⚔️
@@ -577,19 +531,11 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
               key={pos.id}
               onClick={() => onSelect(pos.id)}
               style={{
-                backgroundColor: '#0d1f12',
-                border: '1.5px solid #1a3a22',
-                borderRadius: '14px',
-                padding: '20px 16px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-                fontFamily: 'inherit',
-                transition: 'all 0.15s ease',
-                WebkitTapHighlightColor: 'transparent',
-                minHeight: '100px',
+                backgroundColor: '#0d1f12', border: '1.5px solid #1a3a22',
+                borderRadius: '14px', padding: '20px 16px', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '10px', fontFamily: 'inherit', transition: 'all 0.15s ease',
+                WebkitTapHighlightColor: 'transparent', minHeight: '100px',
               }}
             >
               <span style={{ fontSize: '32px', lineHeight: 1 }}>{pos.emoji}</span>
@@ -604,217 +550,315 @@ function DefaultView({ onSelect }: { onSelect: (id: string) => void }) {
   );
 }
 
-// ─── Option Card ──────────────────────────────────────────────────────────────
+// ─── Subgraph Computation ─────────────────────────────────────────────────────
 
-function OptionCard({
-  option,
-  onTap,
-}: {
-  option: Option;
-  onTap: () => void;
-}) {
-  const isSubmission = option.type === 'submission';
-  const isTakedown   = option.type === 'takedown';
+const COL0 = 0;
+const COL1 = 320;
+const COL2 = 640;
 
-  return (
-    <div
-      onClick={onTap}
-      style={{
-        backgroundColor: isSubmission ? '#1a0505' : isTakedown ? '#120820' : '#0d1a0d',
-        border: `1.5px solid ${isSubmission ? '#7f1d1d' : isTakedown ? '#4c1d95' : '#14532d'}`,
-        borderRadius: '12px',
-        padding: '14px 16px',
-        marginBottom: '10px',
-        cursor: 'pointer',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        WebkitTapHighlightColor: 'transparent',
-      }}
-    >
-      <div>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: '#e8e8ea' }}>
-          {option.label}
-        </div>
-        {option.edgeLabel && (
-          <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px' }}>
-            {option.edgeLabel}
-          </div>
-        )}
-      </div>
-      <div style={{ fontSize: '18px', marginLeft: '12px', flexShrink: 0 }}>
-        {isSubmission ? '🔴' : isTakedown ? '🟣' : '→'}
-      </div>
-    </div>
-  );
-}
+function computeSubgraph(
+  positionId: string,
+  positionGraph: Record<string, PositionData>
+): { nodes: Node[]; edges: Edge[] } {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
 
-// ─── Breadcrumb ───────────────────────────────────────────────────────────────
+  const center = positionGraph[positionId];
+  if (!center) return { nodes, edges };
 
-function Breadcrumb({
-  stack,
-  onJump,
-}: {
-  stack: string[];       // array of position IDs
-  onJump: (idx: number) => void; // jump to stack[idx] (idx = -1 = home)
-}) {
-  // Build segments: Home + each stack item
-  const segments: { label: string; idx: number }[] = [
-    { label: 'Home', idx: -1 },
-    ...stack.map((id, i) => ({
-      label: POSITION_GRAPH[id]?.label ?? id,
-      idx: i,
-    })),
-  ];
+  const l1Options = center.options;
+  const l1Count = l1Options.length;
 
-  // Show last 3 segments; if more, prefix with "..."
-  const visible = segments.length > 3 ? segments.slice(-3) : segments;
-  const hasOverflow = segments.length > 3;
+  // Center node — vertically centered
+  const centerY = Math.max((l1Count - 1) * 90, 0) / 2;
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'nowrap',
-        overflow: 'hidden',
-        gap: '4px',
-        fontSize: '12px',
-        color: '#6b7280',
-        minWidth: 0,
-      }}
-    >
-      {hasOverflow && (
-        <>
-          <span style={{ color: '#4b5563' }}>…</span>
-          <span style={{ color: '#4b5563' }}>›</span>
-        </>
-      )}
-      {visible.map((seg, i) => {
-        const isLast = i === visible.length - 1;
-        return (
-          <React.Fragment key={seg.idx}>
-            {i > 0 && <span style={{ color: '#4b5563', flexShrink: 0 }}>›</span>}
-            <span
-              onClick={() => !isLast && onJump(seg.idx)}
-              style={{
-                color: isLast ? '#e8e8ea' : '#7c3aed',
-                fontWeight: isLast ? 700 : 500,
-                cursor: isLast ? 'default' : 'pointer',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '120px',
-              }}
-            >
-              {seg.label}
-            </span>
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
+  nodes.push({
+    id: 'center',
+    type: 'default',
+    position: { x: COL0, y: centerY },
+    data: { label: `${center.emoji} ${center.label}`, type: 'center' },
+    style: {
+      width: 180,
+      height: 64,
+      borderRadius: '10px',
+      background: '#1e1e3f',
+      border: '3px solid #ffffff',
+      boxShadow: '0 0 20px rgba(255,255,255,0.25)',
+      color: '#ffffff',
+      fontWeight: 700,
+      fontSize: '13px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center' as const,
+      padding: '0 10px',
+    },
+  });
 
-// ─── Position View ────────────────────────────────────────────────────────────
+  // Track L2 y-offsets per L1 node
+  let l2GlobalY = 0;
 
-function PositionView({
-  stack,
-  onBack,
-  onPush,
-  onJump,
-}: {
-  stack: string[];
-  onBack: () => void;
-  onPush: (id: string) => void;
-  onJump: (idx: number) => void;
-}) {
-  const posId = stack[stack.length - 1];
-  const pos = POSITION_GRAPH[posId];
+  l1Options.forEach((opt, l1i) => {
+    const l1Y = l1i * 90;
+    const isSubmission = opt.type === 'submission';
+    const isTakedown = opt.type === 'takedown';
+    const isTransition = opt.type === 'transition';
+    const l1Id = `l1-${l1i}`;
 
-  if (!pos) {
-    return (
-      <div style={{ padding: '24px', color: '#e8e8ea' }}>
-        Position not found: {posId}
-      </div>
-    );
-  }
-
-  const handleOption = (option: Option) => {
-    if (option.type === 'submission' || option.type === 'takedown') {
-      const query = encodeURIComponent(`bjj ${option.label} tutorial`);
-      window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
-    } else if (option.targetId) {
-      onPush(option.targetId);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backgroundColor: '#09090d',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* ── Sticky Header ── */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          backgroundColor: '#09090d',
-          borderBottom: '1px solid #1a1a26',
-          padding: '12px 16px',
+    if (isSubmission || isTakedown) {
+      nodes.push({
+        id: l1Id,
+        type: 'default',
+        position: { x: COL1, y: l1Y },
+        data: {
+          label: `${isTakedown ? '🟣' : '🔴'} ${opt.label.toUpperCase()}`,
+          type: isTakedown ? 'takedown' : 'submission',
+          label_raw: opt.label,
+        },
+        style: {
+          width: 150,
+          height: 40,
+          borderRadius: '999px',
+          background: isTakedown ? '#1a0a2d' : '#2d0a0a',
+          border: `2px solid ${isTakedown ? '#9333ea' : '#dc2626'}`,
+          color: isTakedown ? '#d8b4fe' : '#fca5a5',
+          fontSize: '11px',
+          fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          flexShrink: 0,
-        }}
-      >
-        <button
-          onClick={onBack}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            color: '#e8e8ea',
-            border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '8px',
-            padding: '6px 12px',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
-        >
-          ← Back
-        </button>
-        <Breadcrumb stack={stack} onJump={onJump} />
-      </div>
+          justifyContent: 'center',
+          textAlign: 'center' as const,
+          cursor: 'pointer',
+          padding: '0 8px',
+        },
+      });
 
-      {/* ── Scrollable Content ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-        {/* Position title */}
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#e8e8ea', letterSpacing: '-0.3px' }}>
-            {pos.emoji} {pos.label}
-          </div>
-          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px', fontStyle: 'italic' }}>
-            — position before submission —
-          </div>
-        </div>
+      edges.push({
+        id: `e-center-${l1Id}`,
+        source: 'center',
+        target: l1Id,
+        type: 'smoothstep',
+        animated: false,
+        label: opt.edgeLabel,
+        style: { stroke: '#dc2626', strokeWidth: 2 },
+        labelStyle: { fill: '#6b7280', fontSize: 10 },
+        labelBgStyle: { fill: 'transparent' },
+      });
+    } else if (isTransition) {
+      nodes.push({
+        id: l1Id,
+        type: 'default',
+        position: { x: COL1, y: l1Y },
+        data: {
+          label: opt.label,
+          type: 'transition',
+          targetId: opt.targetId,
+        },
+        style: {
+          width: 160,
+          height: 52,
+          borderRadius: '10px',
+          background: '#0f2d1a',
+          border: '2px solid #22c55e',
+          color: '#86efac',
+          fontSize: '12px',
+          fontWeight: 700,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center' as const,
+          padding: '0 8px',
+        },
+      });
 
-        {/* Option cards */}
-        {pos.options.map((option, i) => (
-          <OptionCard key={i} option={option} onTap={() => handleOption(option)} />
-        ))}
-      </div>
-    </div>
+      edges.push({
+        id: `e-center-${l1Id}`,
+        source: 'center',
+        target: l1Id,
+        type: 'smoothstep',
+        animated: true,
+        label: opt.edgeLabel,
+        style: { stroke: '#4a7cc7', strokeWidth: 1.5, strokeDasharray: '5,5' },
+        labelStyle: { fill: '#6b7280', fontSize: 10 },
+        labelBgStyle: { fill: 'transparent' },
+      });
+
+      // L2: expand options of this transition node
+      if (opt.targetId && positionGraph[opt.targetId]) {
+        const l2Pos = positionGraph[opt.targetId];
+        const l2Options = l2Pos.options;
+        const l2Count = l2Options.length;
+
+        // Group L2 nodes near their L1 parent
+        const l2GroupCenter = l1Y;
+        const l2StartY = l2GlobalY;
+
+        // Space them 80px apart, centered around the parent if possible
+        const l2TotalHeight = (l2Count - 1) * 80;
+        const l2GroupTop = l2GroupCenter - l2TotalHeight / 2;
+
+        // Make sure no overlap with previous L2 group
+        const actualStart = Math.max(l2StartY, l2GroupTop);
+
+        l2Options.forEach((l2opt, l2i) => {
+          const l2Y = actualStart + l2i * 80;
+          const l2Id = `l2-${l1i}-${l2i}`;
+          const l2IsSubmission = l2opt.type === 'submission';
+          const l2IsTakedown = l2opt.type === 'takedown';
+          const l2IsTransition = l2opt.type === 'transition';
+
+          if (l2IsSubmission || l2IsTakedown) {
+            nodes.push({
+              id: l2Id,
+              type: 'default',
+              position: { x: COL2, y: l2Y },
+              data: {
+                label: `${l2IsTakedown ? '🟣' : '🔴'} ${l2opt.label.toUpperCase()}`,
+                type: l2IsTakedown ? 'takedown' : 'submission',
+                label_raw: l2opt.label,
+              },
+              style: {
+                width: 150,
+                height: 40,
+                borderRadius: '999px',
+                background: l2IsTakedown ? '#1a0a2d' : '#2d0a0a',
+                border: `2px solid ${l2IsTakedown ? '#9333ea' : '#dc2626'}`,
+                color: l2IsTakedown ? '#d8b4fe' : '#fca5a5',
+                fontSize: '10px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center' as const,
+                cursor: 'pointer',
+                padding: '0 8px',
+              },
+            });
+
+            edges.push({
+              id: `e-${l1Id}-${l2Id}`,
+              source: l1Id,
+              target: l2Id,
+              type: 'smoothstep',
+              animated: false,
+              label: l2opt.edgeLabel,
+              style: { stroke: '#dc2626', strokeWidth: 1.5 },
+              labelStyle: { fill: '#6b7280', fontSize: 10 },
+              labelBgStyle: { fill: 'transparent' },
+            });
+          } else if (l2IsTransition) {
+            nodes.push({
+              id: l2Id,
+              type: 'default',
+              position: { x: COL2, y: l2Y },
+              data: {
+                label: l2opt.label,
+                type: 'transition',
+                targetId: l2opt.targetId,
+              },
+              style: {
+                width: 150,
+                height: 48,
+                borderRadius: '10px',
+                background: '#0a1a10',
+                border: '1px solid #374151',
+                color: '#9ca3af',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center' as const,
+                padding: '0 8px',
+              },
+            });
+
+            edges.push({
+              id: `e-${l1Id}-${l2Id}`,
+              source: l1Id,
+              target: l2Id,
+              type: 'smoothstep',
+              animated: true,
+              label: l2opt.edgeLabel,
+              style: { stroke: '#374151', strokeWidth: 1, strokeDasharray: '5,5' },
+              labelStyle: { fill: '#6b7280', fontSize: 10 },
+              labelBgStyle: { fill: 'transparent' },
+            });
+          }
+        });
+
+        l2GlobalY = actualStart + l2Count * 80 + 20;
+      }
+    }
+  });
+
+  return { nodes, edges };
+}
+
+// ─── SubgraphView (inner, uses useReactFlow) ──────────────────────────────────
+
+function SubgraphView({
+  positionId,
+  positionGraph,
+  setNavStack,
+}: {
+  positionId: string;
+  positionGraph: Record<string, PositionData>;
+  navStack: string[];
+  setNavStack: React.Dispatch<React.SetStateAction<string[]>>;
+}) {
+  const { fitView } = useReactFlow();
+  const { nodes, edges } = computeSubgraph(positionId, positionGraph);
+  const prevPositionId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (prevPositionId.current !== positionId) {
+      prevPositionId.current = positionId;
+      const t = setTimeout(() => {
+        fitView({ padding: 0.12, duration: 400 });
+      }, 60);
+      return () => clearTimeout(t);
+    }
+  }, [positionId, fitView]);
+
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      const d = node.data as { type: string; targetId?: string; label?: string; label_raw?: string };
+      if (d.type === 'transition' && d.targetId) {
+        setNavStack((prev) => [...prev, d.targetId!]);
+      } else if (d.type === 'submission' || d.type === 'takedown') {
+        const raw = (d.label_raw as string) || (d.label as string) || '';
+        window.open(
+          `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(raw)}+tutorial`,
+          '_blank'
+        );
+      }
+    },
+    [setNavStack]
+  );
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodeClick={onNodeClick}
+      fitView
+      fitViewOptions={{ padding: 0.12 }}
+      nodesDraggable={false}
+      nodesConnectable={false}
+      elementsSelectable={false}
+      panOnDrag={true}
+      zoomOnScroll={true}
+      zoomOnPinch={true}
+      minZoom={0.3}
+      maxZoom={2}
+      style={{ background: '#09090d' }}
+      proOptions={{ hideAttribution: true }}
+    >
+      <Background color="#1e1e2e" gap={24} size={1} />
+    </ReactFlow>
   );
 }
 
@@ -827,7 +871,6 @@ export default function GamePlanFlow() {
   // Show a random general quote on first load
   useEffect(() => {
     const q = getGeneralQuote();
-    // Small delay so the UI renders first
     const t = setTimeout(() => setActiveQuote(q), 600);
     return () => clearTimeout(t);
   }, []);
@@ -836,46 +879,92 @@ export default function GamePlanFlow() {
 
   const handleSelect = (id: string) => {
     setNavStack([id]);
-    // Show position-specific quote if one exists
     const q = getPositionQuote(id);
-    if (q) {
-      setActiveQuote(q);
-    }
+    if (q) setActiveQuote(q);
   };
 
   const handleBack = () => {
     setNavStack((stack) => stack.slice(0, -1));
   };
 
-  const handlePush = (id: string) => {
-    setNavStack((stack) => [...stack, id]);
-    // Show position-specific quote if one exists
-    const q = getPositionQuote(id);
-    if (q) {
-      setActiveQuote(q);
-    }
-  };
+  const currentPositionId = navStack[navStack.length - 1];
+  const currentPosition = currentPositionId ? POSITION_GRAPH[currentPositionId] : null;
 
-  // Jump to a specific index in the stack (-1 = home)
-  const handleJump = (idx: number) => {
-    if (idx === -1) {
-      setNavStack([]);
-    } else {
-      setNavStack((stack) => stack.slice(0, idx + 1));
-    }
+  // Build breadcrumb label
+  const buildBreadcrumb = () => {
+    if (navStack.length <= 1) return null;
+    const segments = ['Home', ...navStack.map((id) => POSITION_GRAPH[id]?.label ?? id)];
+    // Show last 3
+    const visible = segments.length > 3 ? ['…', ...segments.slice(-2)] : segments;
+    return visible.join(' › ');
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', backgroundColor: '#09090d' }}>
+    <div style={{ width: '100%', height: '100%', backgroundColor: '#09090d', display: 'flex', flexDirection: 'column' }}>
       {navStack.length === 0 ? (
         <DefaultView onSelect={handleSelect} />
       ) : (
-        <PositionView
-          stack={navStack}
-          onBack={handleBack}
-          onPush={handlePush}
-          onJump={handleJump}
-        />
+        <>
+          {/* ── Header ── */}
+          <div
+            style={{
+              flexShrink: 0,
+              backgroundColor: '#09090d',
+              borderBottom: '1px solid #1a1a26',
+              padding: '12px 16px',
+              zIndex: 10,
+            }}
+          >
+            {/* Row 1: Back + breadcrumb */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <button
+                onClick={handleBack}
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  color: '#e8e8ea',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  flexShrink: 0,
+                }}
+              >
+                ← Back
+              </button>
+              {buildBreadcrumb() && (
+                <div style={{ fontSize: '12px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {buildBreadcrumb()}
+                </div>
+              )}
+            </div>
+            {/* Row 2: Position title */}
+            {currentPosition && (
+              <div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: '#e8e8ea', letterSpacing: '-0.3px' }}>
+                  {currentPosition.emoji} {currentPosition.label}
+                </div>
+                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px', fontStyle: 'italic' }}>
+                  — position before submission —
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── React Flow Canvas ── */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <ReactFlowProvider>
+              <SubgraphView
+                positionId={currentPositionId}
+                positionGraph={POSITION_GRAPH}
+                navStack={navStack}
+                setNavStack={setNavStack}
+              />
+            </ReactFlowProvider>
+          </div>
+        </>
       )}
 
       {/* Professor Modal */}

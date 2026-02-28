@@ -369,9 +369,47 @@ function ProfessorMax({ visible, onDismiss }: { visible: boolean; onDismiss: () 
 
 // ─── Video Modal ──────────────────────────────────────────────────────────────
 
+const VIDEO_IDS: Record<string, string> = {
+  // Chokes
+  "Rear Naked Choke": "KH6qCjgLXJA",          // Stephan Kesting - Tightest RNC tutorial
+  "Guillotine (High Elbow)": "XCiRr7TW2bk",    // John Danaher - The High Elbow Guillotine
+  "Arm-In Guillotine": "9qdBYSueAZk",           // Neil Melanson - How To: Arm in Guillotine (No-Gi)
+  "Triangle Choke": "LDE0fkzZT6I",              // John Danaher - Perfect Triangle Choke
+  "D'Arce Choke": "RnqhyUcj0T8",               // Darce Choke Full System
+  "Anaconda Choke": "E2bzUBx372A",              // Chewjitsu - BJJ Anaconda Choke
+  "Head and Arm Triangle": "VVo66hr8MTI",        // Chewjitsu - Arm Triangle Choke from mount
+  "North-South Choke": "RkFHJHC58qc",           // Marcelo Garcia with Stephan Kesting
+  "Bow and Arrow Choke": "nS6ALx73epc",          // Stephan Kesting - Bow and Arrow with Killer Details
+  "Ezekiel Choke": "jIXrWitQZx4",              // Erik Paulson via BJJ Fanatics
+  "Loop Choke": "SNASDxyjcAA",                  // Loop Chokes Please! (Basics)
+  "Clock Choke": "jAGbvarXopw",                 // How to Do the Clock Choke in 5 Easy Steps
+  "Cross Collar Choke": "uuyiUxsyywM",           // Henry Akins via BJJ Fanatics - Perfect Cross Collar Choke
+  // Arm Locks
+  "Armbar": "8wNQ5UGLQHk",                     // Stephan Kesting - 10 Ways to Finish the Armbar
+  "Kimura": "mVkKOPNGvjA",                      // Chewjitsu - Kimura From Closed Guard
+  "Americana": "DXQ5BJ5gz8U",                   // Jeff Glover via BJJ Fanatics
+  "Omoplata": "tfvEGtSCIRI",                    // Stephan Kesting - Omoplata vs Marceloplata vs Baratoplata
+  "Wristlock": "fnbfTQ5CVSw",                   // Roger Gracie via BJJ Fanatics
+  "Baratoplata": "7PzrTuuHzZ4",                 // Joao Miyao via BJJ Fanatics - Baratoplata from Spider Guard
+  // Leg Locks
+  "Straight Ankle Lock": "Ksy8jJTZYec",          // Chewjitsu - Straight Ankle Lock and Counter
+  "Inside Heel Hook": "w-W0ug7Edag",            // Lachlan Giles - Inside Heel Hook Setup and Safety
+  "Outside Heel Hook": "Zs14XxOcBr8",           // Gordon Ryan via BJJ Fanatics
+  "Kneebar": "oBlMI4iKm3c",                     // The First Kneebar You Should Learn
+  "Calf Slicer": "RXe0VGfv5FI",                 // Knight Jiu Jitsu - Calf Slicers from Everywhere
+  "Toe Hold": "7wVbUS0jCts",                    // Knight Jiu Jitsu - The Toe Hold: How & When to Use It
+  // Specialty
+  "Gogoplata": "9gUzj39Kh0s",                   // Jeff Glover via BJJ Fanatics - Gogoplata Submission
+  "Peruvian Necktie": "9uO9IRBC92Q",            // Peruvian Necktie System Full Instructional
+  "Twister": "V3nDmb66Xpc",                     // Stephan Kesting - The Easiest Way to do the Twister
+  "Buggy Choke": "0VDUwuyT6N4",                 // Fix Your Buggy Choke - How To Buggy Choke in BJJ
+  "Banana Split": "_TPwJM8JCD4",                 // Andre Galvao via BJJ Fanatics - Banana Split Submission
+};
+
 function VideoModal({ query, onClose }: { query: string | null; onClose: () => void }) {
   if (!query) return null;
-  const embedUrl = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent("bjj " + query + " tutorial")}&autoplay=1&rel=0`;
+  const videoId = VIDEO_IDS[query] ?? null;
+  const embedUrl = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0` : null;
   const fallbackUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent("bjj " + query + " tutorial")}`;
 
   return (
@@ -423,18 +461,31 @@ function VideoModal({ query, onClose }: { query: string | null; onClose: () => v
         </div>
 
         {/* Embedded Video */}
-        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
-          <iframe
-            src={embedUrl}
-            style={{
-              position: "absolute", top: 0, left: 0,
-              width: "100%", height: "100%", border: "none",
-            }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title={`BJJ ${query} tutorial`}
-          />
-        </div>
+        {videoId ? (
+          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
+            <iframe
+              src={embedUrl!}
+              style={{
+                position: "absolute", top: 0, left: 0,
+                width: "100%", height: "100%", border: "none",
+              }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title={`BJJ ${query} tutorial`}
+            />
+          </div>
+        ) : (
+          <div style={{ padding: "32px 16px", textAlign: "center" }}>
+            <a
+              href={fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#a78bfa", fontSize: "14px" }}
+            >
+              Watch on YouTube →
+            </a>
+          </div>
+        )}
 
         {/* Footer */}
         <div style={{ padding: "12px 16px" }}>
@@ -1185,7 +1236,7 @@ export default function Home() {
           display: "flex", flexDirection: "column", backgroundColor: T.bg,
         }}>
           <div style={{ flexShrink: 0, height: "93px" }} />
-          <div style={{ flex: 1, overflow: "auto" }}>
+          <div style={{ flex: 1, overflow: "hidden" }}>
             <GamePlanFlow openVideo={openVideo} />
           </div>
         </div>

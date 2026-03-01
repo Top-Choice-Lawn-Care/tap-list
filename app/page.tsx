@@ -21,13 +21,22 @@ const SubmissionMap = dynamic(() => import("./components/SubmissionMap"), {
   ),
 });
 
+const PositionGraph = dynamic(() => import("./components/PositionGraph"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#6b7280", fontSize: "14px" }}>
+      Loading position graph…
+    </div>
+  ),
+});
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
 type Difficulty = "white" | "blue" | "purple" | "brown" | "black";
 type Submission = { name: string; category: string; difficulty: Difficulty; };
-type Tab = "taplist" | "gameplan" | "timer" | "map";
+type Tab = "taplist" | "gameplan" | "timer" | "map" | "paths";
 
 const DIFFICULTY_DOT: Record<Difficulty, { color: string; label: string }> = {
   white:  { color: "#e5e7eb", label: "Common"      },
@@ -931,9 +940,9 @@ export default function Home() {
           padding: "3px", borderRadius: "10px",
           border: `1px solid ${T.borderSubtle}`,
         }}>
-          {(["gameplan", "taplist", "timer", "map"] as Tab[]).map((tab) => {
+          {(["gameplan", "taplist", "timer", "map", "paths"] as Tab[]).map((tab) => {
             const labels: Record<Tab, string> = {
-              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer", map: "🗺️ Map"
+              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer", map: "🗺️ Map", paths: "🕸️ Paths"
             };
             const isActive = activeTab === tab;
             return (
@@ -1177,6 +1186,21 @@ export default function Home() {
           <div style={{ flexShrink: 0, height: `${headerHeight}px` }} />
           <div style={{ flex: 1, overflow: "hidden" }}>
             <SubmissionMap openVideo={openVideo} />
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════
+          PATHS TAB
+      ══════════════════════════════════════════ */}
+      {activeTab === "paths" && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          display: "flex", flexDirection: "column", backgroundColor: "#09090d",
+        }}>
+          <div style={{ flexShrink: 0, height: `${headerHeight}px` }} />
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <PositionGraph openVideo={openVideo} />
           </div>
         </div>
       )}

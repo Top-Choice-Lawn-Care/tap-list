@@ -12,13 +12,22 @@ const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
   ),
 });
 
+const SubmissionMap = dynamic(() => import("./components/SubmissionMap"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#6b7280", fontSize: "14px" }}>
+      Loading flow map…
+    </div>
+  ),
+});
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
 type Difficulty = "white" | "blue" | "purple" | "brown" | "black";
 type Submission = { name: string; category: string; difficulty: Difficulty; };
-type Tab = "taplist" | "gameplan" | "timer";
+type Tab = "taplist" | "gameplan" | "timer" | "map";
 
 const DIFFICULTY_DOT: Record<Difficulty, { color: string; label: string }> = {
   white:  { color: "#e5e7eb", label: "Common"      },
@@ -922,9 +931,9 @@ export default function Home() {
           padding: "3px", borderRadius: "10px",
           border: `1px solid ${T.borderSubtle}`,
         }}>
-          {(["gameplan", "taplist", "timer"] as Tab[]).map((tab) => {
+          {(["gameplan", "taplist", "timer", "map"] as Tab[]).map((tab) => {
             const labels: Record<Tab, string> = {
-              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer"
+              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer", map: "🗺️ Map"
             };
             const isActive = activeTab === tab;
             return (
@@ -1157,6 +1166,21 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       {activeTab === "timer" && <RollTimer />}
 
+      {/* ══════════════════════════════════════════
+          MAP TAB
+      ══════════════════════════════════════════ */}
+      {activeTab === "map" && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          display: "flex", flexDirection: "column", backgroundColor: "#09090d",
+        }}>
+          <div style={{ flexShrink: 0, height: `${headerHeight}px` }} />
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <SubmissionMap openVideo={openVideo} />
+          </div>
+        </div>
+      )}
+
       {/* ── Log Tap Modal ──────────────────────────────────────────────── */}
       {modalSub && (
         <div onClick={closeModal} style={{
@@ -1261,6 +1285,47 @@ export default function Home() {
 
       {/* ── Professor Max ──────────────────────────────────────────────── */}
       {profMounted && <ProfessorMax visible={profVisible} onDismiss={() => setProfVisible(false)} />}
+
+      {/* ── RollCall Promo Banner ──────────────────────────────────────── */}
+      <div style={{
+        margin: "24px 16px 8px",
+        backgroundColor: "#131318",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "12px",
+        padding: "14px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+      }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: "13px", fontWeight: 700, color: "#e8e8ea", marginBottom: "3px" }}>
+            🏫 Does your gym use RollCall?
+          </div>
+          <div style={{ fontSize: "12px", color: "#6b7280", lineHeight: 1.5 }}>
+            The BJJ academy management platform built for schools like yours.
+          </div>
+        </div>
+        <a
+          href="https://rollcall-coral.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            flexShrink: 0,
+            backgroundColor: "rgba(245,158,11,0.12)",
+            border: "1px solid rgba(245,158,11,0.3)",
+            borderRadius: "8px",
+            padding: "7px 12px",
+            fontSize: "12px",
+            fontWeight: 700,
+            color: "#f59e0b",
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Learn more →
+        </a>
+      </div>
 
       {/* Styles */}
       <style>{`

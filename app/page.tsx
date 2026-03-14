@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { createClient } from "../lib/supabase";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import AuthModal from "./components/AuthModal";
 
 const GamePlanFlow = dynamic(() => import("./components/GamePlanFlow"), {
   ssr: false,
@@ -784,6 +787,108 @@ export default function Home() {
   // Streak
   const [streak, setStreak] = useState(0);
 
+  // ── Auth State ────────────────────────────────────────────────────
+  const [supabase] = useState<SupabaseClient>(() => createClient());
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const isSyncingRef = useRef(false);
+
+  // Helper: convert Supabase rows to TapData
+  function rowsToTapData(rows: { submission_name: string; date: string; note: string }[]): TapData {
+    const data: TapData = {};
+    for (const row of rows) {
+      if (!data[row.submission_name]) data[row.submission_name] = [];
+      data[row.submission_name].push({ date: row.date, note: row.note || "" });
+    }
+    return data;
+  }
+
+  // Fetch taps from Supabase
+  async function fetchSupabaseTaps(): Promise<TapData> {
+    const { data } = await supabase.from("taps").select("submission_name, date, note");
+    return data ? rowsToTapData(data) : {};
+  }
+
+  // Migrate localStorage taps to Supabase (avoid duplicates)
+  async function migrateLocalTaps(localData: TapData) {
+    const remoteTaps = await fetchSupabaseTaps();
+    const inserts: { submission_name: string; date: string; note: string }[] = [];
+
+    for (const [name, entries] of Object.entries(localData)) {
+      const remoteEntries = remoteTaps[name] || [];
+      for (const entry of entries) {
+        const isDupe = remoteEntries.some(
+          (r) => r.date === entry.date && r.note === entry.note
+        );
+        if (!isDupe) {
+          inserts.push({ submission_name: name, date: entry.date, note: entry.note });
+        }
+      }
+    }
+
+    if (inserts.length > 0) {
+      await supabase.from("taps").insert(inserts);
+    }
+
+    // Fetch merged result
+    return await fetchSupabaseTaps();
+  }
+
+  // Sync a tap add to Supabase
+  async function syncAddTap(submissionName: string, date: string, note: string) {
+    if (!user) return;
+    await supabase.from("taps").insert({ submission_name: submissionName, date, note });
+  }
+
+  // Sync a tap delete to Supabase
+  async function syncDeleteTap(submissionName: string, date: string, note: string) {
+    if (!user) return;
+    // Delete first matching row
+    const { data } = await supabase
+      .from("taps")
+      .select("id")
+      .eq("submission_name", submissionName)
+      .eq("date", date)
+      .eq("note", note)
+      .limit(1);
+    if (data && data.length > 0) {
+      await supabase.from("taps").delete().eq("id", data[0].id);
+    }
+  }
+
+  // Auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const newUser = session?.user ?? null;
+        setUser(newUser);
+
+        if (newUser && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+          if (isSyncingRef.current) return;
+          isSyncingRef.current = true;
+          try {
+            // Get localStorage data before migration
+            let localData: TapData = {};
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              if (raw) localData = JSON.parse(raw);
+            } catch {}
+
+            // Migrate local taps and fetch merged
+            const merged = await migrateLocalTaps(localData);
+            setTapData(merged);
+            // Also update localStorage with merged data
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } finally {
+            isSyncingRef.current = false;
+          }
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -841,16 +946,24 @@ export default function Home() {
 
   function confirmTap() {
     if (!modalSub) return;
+    const sub = modalSub;
+    const date = modalDate;
+    const note = modalNote;
     setTapData((prev) => {
-      const existing = prev[modalSub] ?? [];
-      return { ...prev, [modalSub]: [...existing, { date: modalDate, note: modalNote }] };
+      const existing = prev[sub] ?? [];
+      return { ...prev, [sub]: [...existing, { date, note }] };
     });
+    // Optimistic: sync to Supabase in background
+    syncAddTap(sub, date, note);
     closeModal();
   }
 
   function deleteTap(subName: string, index: number) {
     setTapData((prev) => {
       const existing = prev[subName] ?? [];
+      const entry = existing[index];
+      // Optimistic: sync delete to Supabase in background
+      if (entry) syncDeleteTap(subName, entry.date, entry.note);
       const updated = existing.filter((_, i) => i !== index);
       if (updated.length === 0) {
         const next = { ...prev };
@@ -905,15 +1018,47 @@ export default function Home() {
           }}>
             🥋 JJ Game Plan
           </h1>
-          {/* Belt badge */}
-          <div style={{
-            backgroundColor: currentBelt.bg,
-            border: `1px solid ${currentBelt.color}44`,
-            borderRadius: "20px", padding: "4px 10px",
-            display: "flex", alignItems: "center", gap: "5px",
-            fontSize: "12px", fontWeight: 700, color: currentBelt.color,
-          }}>
-            {currentBelt.emoji} {currentBelt.name}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Auth button */}
+            {user ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "10px", color: T.textTertiary, maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {user.email}
+                </span>
+                <button
+                  onClick={async () => { await supabase.auth.signOut(); setUser(null); }}
+                  style={{
+                    background: "none", border: "none", color: T.textTertiary,
+                    fontSize: "10px", cursor: "pointer", fontFamily: "inherit",
+                    textDecoration: "underline", padding: 0,
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                style={{
+                  backgroundColor: T.elevated, border: `1px solid ${T.borderDefault}`,
+                  borderRadius: "6px", padding: "4px 10px",
+                  fontSize: "11px", fontWeight: 600, color: T.textSecondary,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                Sign in
+              </button>
+            )}
+            {/* Belt badge */}
+            <div style={{
+              backgroundColor: currentBelt.bg,
+              border: `1px solid ${currentBelt.color}44`,
+              borderRadius: "20px", padding: "4px 10px",
+              display: "flex", alignItems: "center", gap: "5px",
+              fontSize: "12px", fontWeight: 700, color: currentBelt.color,
+            }}>
+              {currentBelt.emoji} {currentBelt.name}
+            </div>
           </div>
         </div>
 
@@ -1265,6 +1410,11 @@ export default function Home() {
 
       {/* ── Professor Max ──────────────────────────────────────────────── */}
       {profMounted && <ProfessorMax visible={profVisible} onDismiss={() => setProfVisible(false)} />}
+
+      {/* ── Auth Modal ─────────────────────────────────────────────────── */}
+      {showAuthModal && (
+        <AuthModal supabase={supabase} onClose={() => setShowAuthModal(false)} />
+      )}
 
       {/* ── RollCall Promo Banner ──────────────────────────────────────── */}
       <div style={{

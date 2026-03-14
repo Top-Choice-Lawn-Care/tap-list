@@ -23,7 +23,7 @@ type TapEntry = { date: string; note: string; };
 type TapData = { [submissionName: string]: TapEntry[]; };
 type Difficulty = "white" | "blue" | "purple" | "brown" | "black";
 type Submission = { name: string; category: string; difficulty: Difficulty; };
-type Tab = "taplist" | "gameplan" | "timer";
+type Tab = "taplist" | "gameplan" | "timer" | "rollcall";
 
 const DIFFICULTY_DOT: Record<Difficulty, { color: string; label: string }> = {
   white:  { color: "#e5e7eb", label: "Common"      },
@@ -1069,9 +1069,9 @@ export default function Home() {
           padding: "3px", borderRadius: "10px",
           border: `1px solid ${T.borderSubtle}`,
         }}>
-          {(["gameplan", "taplist", "timer"] as Tab[]).map((tab) => {
+          {(["gameplan", "taplist", "timer", "rollcall"] as Tab[]).map((tab) => {
             const labels: Record<Tab, string> = {
-              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer"
+              taplist: "🥋 Taps", gameplan: "🔗 Plan", timer: "⏱️ Timer", rollcall: "🏫 RollCall"
             };
             const isActive = activeTab === tab;
             return (
@@ -1304,7 +1304,73 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       {activeTab === "timer" && <RollTimer />}
 
-
+      {/* ══════════════════════════════════════════
+          ROLLCALL TAB
+      ══════════════════════════════════════════ */}
+      {activeTab === "rollcall" && (
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center",
+          padding: "32px 16px", minHeight: "calc(100vh - 120px)",
+        }}>
+          <div style={{
+            width: "100%", maxWidth: "480px",
+            backgroundColor: "#131318",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "16px",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              padding: "24px 24px 20px",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "32px", marginBottom: "8px" }}>🏫</div>
+              <h2 style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#e8e8ea", letterSpacing: "-0.4px" }}>
+                RollCall
+              </h2>
+              <p style={{ margin: "6px 0 0", fontSize: "14px", color: "#6b7280", lineHeight: 1.5 }}>
+                BJJ academy management built for professors.<br/>
+                Belt tracking. Stripe billing. AI insights.
+              </p>
+            </div>
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              {[
+                { icon: "💳", title: "Stripe-native billing", desc: "2.7% flat — no processing markup like Zen Planner" },
+                { icon: "🥋", title: "Belt progression engine", desc: "Built for BJJ's 5–15 year system, not generic martial arts" },
+                { icon: "✨", title: "AI promotion insights", desc: "See who's ready for stripes before they ask" },
+                { icon: "📊", title: "Attendance & retention", desc: "Know which students are at risk before they quit" },
+              ].map((f) => (
+                <div key={f.title} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                  <div style={{ fontSize: "20px", flexShrink: 0, marginTop: "1px" }}>{f.icon}</div>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#e8e8ea" }}>{f.title}</div>
+                    <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "2px", lineHeight: 1.5 }}>{f.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <a
+                href="https://rollcall-coral.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block", textAlign: "center",
+                  background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+                  color: "#fff", borderRadius: "12px", padding: "14px",
+                  fontSize: "15px", fontWeight: 700, textDecoration: "none",
+                  boxShadow: "0 0 20px rgba(220,38,fa,0.3)",
+                }}
+              >
+                Learn more →
+              </a>
+              <p style={{ margin: 0, textAlign: "center", fontSize: "11px", color: "#4b5563" }}>
+                Built by a BJJ practitioner. Not another generic gym app.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Log Tap Modal ──────────────────────────────────────────────── */}
       {modalSub && (

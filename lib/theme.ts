@@ -1,0 +1,17 @@
+export const T = {
+  bg: "#09090d",
+  surface: "#131318",
+  elevated: "#1c1c24",
+  modal: "#232329",
+  borderSubtle: "rgba(255,255,255,0.06)",
+  borderDefault: "rgba(255,255,255,0.09)",
+  borderStrong: "rgba(255,255,255,0.14)",
+  textPrimary: "#e8e8ea",
+  textSecondary: "#9ca3af",
+  textTertiary: "#6b7280",
+  textDisabled: "#4b5563",
+  red: "#dc2626",
+  blue: "#2563eb",
+  green: "#16a34a",
+  purple: "#7c3aed",
+};

@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JJ Game Plan
 
-## Getting Started
+Mobile-first BJJ app: a movement tree (positions to transitions and submissions), a tap log, and a roll timer. It runs as a web app and PWA. Screens are client-rendered so the same UI can later be wrapped (for example with Capacitor) for iOS and Android.
 
-First, run the development server:
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm run lint
+npx tsc --noEmit
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`npm run build` succeeds with no environment variables set.
 
-## Learn More
+## Supabase (optional)
 
-To learn more about Next.js, take a look at the following resources:
+Cloud sign-in and tap sync stay off until both of these are set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | What it is |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` to `.env.local` and fill them in. Without them, taps stay in `localStorage` under the key `tap-list-data` (`{ [submissionName]: [{ date, note }] }`). Signing in migrates that log into the `taps` table from `supabase/schema.sql` and keeps writing locally as well.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Do not put the Supabase service-role key in the client, `.env.local` committed files, or the repo. The anon key is public; row access is limited by the table's RLS policy.
